@@ -113,7 +113,14 @@ No borra recuerdos. Puedes volver a ejecutarlo cuando quieras; lo único que hac
 
 ## 4. Copiar la URL y la clave
 
-1. **Project Settings → Data API** → copia **Project URL**. Se parece a `https://abcdefghijklmnop.supabase.co`.
+1. **Project Settings → Data API** → copia **Project URL**. Tiene que terminar en `.supabase.co` y **nada más**:
+
+   ```
+   https://abcdefghijklmnop.supabase.co        ← correcto
+   https://abcdefghijklmnop.supabase.co/rest/v1/   ← NO, ese es el endpoint REST
+   ```
+
+   El panel muestra ambos y se confunden con facilidad. El SDK añade `/rest/v1/` por su cuenta; si lo incluyes, pide `/rest/v1//rest/v1/config` y todo falla con `PGRST125`.
 2. **Project Settings → API Keys** → copia la **Publishable key**, que empieza por `sb_publishable_`.
    - Si tu panel todavía muestra el formato antiguo, la equivalente es la **anon / public key**. Cualquiera de las dos sirve.
 3. **No uses** la Secret key, la service_role ni la contraseña de la base de datos. Esas dan control total y quedarían visibles en el navegador.
@@ -267,6 +274,8 @@ Vercel despliega solo al detectar el push.
 |---|---|
 | Sale «Casi listo para nuestra historia» | Faltan `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en Vercel, o las añadiste sin volver a desplegar. |
 | En el build local aparece `Generated an empty chunk: "supabase"` | Normal si compilas sin `.env.local`. Vite descarta el SDK porque la conexión no existe. Con las variables puestas, ese chunk pesa unos 227 kB. |
+| «Nuestros recuerdos vuelven enseguida» y el detalle dice `PGRST125` o `Invalid path specified in request URL` | La `VITE_SUPABASE_URL` lleva `/rest/v1/` pegado al final. Déjala terminando en `.supabase.co` (paso 4) y reinicia Vite, o vuelve a desplegar en Vercel. |
+| «Nuestros recuerdos vuelven enseguida» con otro detalle | El mensaje entre paréntesis dice qué tabla falló y por qué. Si nombra `fotos`, falta el script 03; si habla de JWT o API key, la clave está mal copiada. |
 | No deja guardar nada | Falta ejecutar `03-tercer-mes-sin-login.sql`. Quitar el login de la pantalla no cambia los permisos del servidor. |
 | «Falta la tabla fotos» o no carga el álbum | El script 03 no se ejecutó, o se ejecutó antes que el 01. Córrelos en orden. |
 | Mis fotos no se ven en otro dispositivo | Estabas en modo borrador local, o conectaste otro proyecto de Supabase. El borrador local no sincroniza ni se migra solo. |

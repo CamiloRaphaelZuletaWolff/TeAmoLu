@@ -1,6 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
-const url = import.meta.env.VITE_SUPABASE_URL;
-const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// El panel de Supabase también muestra el endpoint REST; el SDK solo quiere el origen.
+const url = import.meta.env.VITE_SUPABASE_URL?.trim()
+  .replace(/\/+$/, "")
+  .replace(/\/rest\/v1$/, "");
+const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
 // Una configuración ausente muestra una pantalla útil en producción y una demo local.
 let client = null;
 let configurationError = "";
