@@ -1,29 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import {
-  Heart,
-  Music2,
-  Mail,
-  Camera,
-  Settings2,
-  LogOut,
-  X,
-} from "lucide-react";
-import {
-  configured,
-  demoMode,
-  supabase,
-  configurationError,
-} from "./lib/supabase";
+import { Heart, Mail, Camera, Settings2, X, ImagePlus } from "lucide-react";
+import { configured, demoMode, configurationError } from "./lib/supabase";
 import { celebrate } from "./lib/confetti";
+import { fechaHoraBolivia } from "./lib/fechas";
 import { useContenido } from "./hooks/useContenido";
-import { useSesion } from "./hooks/useSesion";
 import { Hero } from "./componentes/Hero";
 import { Timeline, Galeria } from "./componentes/Recuerdos";
 import { Cartas } from "./componentes/Cartas";
-import { Playlist } from "./componentes/Playlist";
 import { Divider, Reveal } from "./componentes/UI";
-import { Editor, ModalLogin, DeleteDialog } from "./componentes/Edicion";
+import { Editor, DeleteDialog } from "./componentes/Edicion";
+import { SubirFotos } from "./componentes/SubirFotos";
 
 const hearts = Array.from({ length: 16 }, (_, i) => ({
   left: `${(i * 37 + 9) % 100}%`,
@@ -53,50 +40,24 @@ function FondoCorazones() {
     </div>
   );
 }
-function App() {
-  const { data, error, loading, reload } = useContenido(),
-    session = useSesion();
-  const [login, setLogin] = useState(false),
-    [editor, setEditor] = useState(null),
+export default function App() {
+  const { data, error, loading, reload } = useContenido();
+  const [editor, setEditor] = useState(null),
     [deletion, setDeletion] = useState(null),
+    [upload, setUpload] = useState(false),
     [toast, setToast] = useState("");
-  const [loaderVisible, setLoaderVisible] = useState(true);
-  const reduced = useReducedMotion();
+  const [loaderVisible, setLoaderVisible] = useState(true),
+    reduced = useReducedMotion();
   useEffect(() => {
     if (loading) return;
     const timer = setTimeout(() => setLoaderVisible(false), reduced ? 0 : 350);
     return () => clearTimeout(timer);
   }, [loading, reduced]);
-  const clicks = useRef({ count: 0, time: 0 });
-  useEffect(() => {
-    if (!session) {
-      setEditor(null);
-      setDeletion(null);
-    }
-  }, [session]);
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(""), 10000);
     return () => clearTimeout(timer);
   }, [toast]);
-  function secretLogin() {
-    const now = Date.now();
-    clicks.current.count =
-      now - clicks.current.time < 1800 ? clicks.current.count + 1 : 1;
-    clicks.current.time = now;
-    if (clicks.current.count >= 3) {
-      clicks.current.count = 0;
-      if (!session) setLogin(true);
-    }
-  }
-  async function logout() {
-    const { error } = await supabase.auth.signOut();
-    setToast(
-      error
-        ? "No se pudo cerrar la sesión. Inténtalo otra vez."
-        : "Hasta el próximo recuerdo. ♡",
-    );
-  }
   const edit = (table, item) => setEditor({ table, item }),
     remove = (table, item) => setDeletion({ table, item });
   if (loading || loaderVisible)
@@ -108,7 +69,7 @@ function App() {
         transition={{ duration: reduced ? 0 : 0.3 }}
       >
         <Heart className="loading-heart" size={52} />
-        <p>Preparando nuestro rinconcito…</p>
+        <p>Preparando algo bonito para Lu…</p>
       </motion.main>
     );
   if (!configured && !demoMode)
@@ -136,6 +97,10 @@ function App() {
         </button>
       </main>
     );
+  const album = [
+    ...data.fotos.map((item) => ({ ...item, _table: "fotos" })),
+    ...data.momentos.map((item) => ({ ...item, _table: "momentos" })),
+  ];
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -152,116 +117,90 @@ function App() {
             <Heart size={21} />
           </span>
           <span>
-            nuestro <em>rinconcito</em>
-            <small>UNA HISTORIA, DOS CORAZONES</small>
+            te amo <em>lu</em>
+            <small>TOTO & LU · NUESTRO TERCER MES</small>
           </span>
         </a>
         <nav aria-label="Navegación principal">
           <a href="#historia">Nuestra historia</a>
-          <a href="#galeria">Recuerdos</a>
+          <a href="#galeria">Nuestras fotos</a>
           <a href="#cartas">Cartitas</a>
-          <a href="#playlist" className="nav-playlist">
-            <Music2 size={15} /> Nuestra música
-          </a>
         </nav>
         <Heart className="header-heart" size={20} />
       </header>
       <main>
-        <Hero config={data.config} momentos={data.momentos} />
+        <Hero config={data.config} momentos={album} />
         <Divider />
-        <Timeline
-          items={data.momentos}
-          session={session}
+        <Timeline items={data.momentos} edit={edit} remove={remove} />
+        <Divider />
+        <Galeria
+          items={album}
+          upload={() => setUpload(true)}
           edit={edit}
           remove={remove}
         />
         <Divider />
-        <Galeria items={data.momentos} />
-        <Divider />
-        <Cartas
-          items={data.cartas}
-          session={session}
-          edit={edit}
-          remove={remove}
-        />
-        <Divider />
-        <Playlist
-          items={data.canciones}
-          session={session}
-          edit={edit}
-          remove={remove}
-        />
+        <Cartas items={data.cartas} edit={edit} remove={remove} />
         <section className="closing">
           <Reveal>
             <Heart className="closing-heart" size={35} />
-            <span className="eyebrow">ESTO ES SOLO EL COMIENZO</span>
+            <span className="eyebrow">NUESTRO TERCER MES JUNTOS</span>
             <h2>
-              Un mes. Mil sonrisas.
+              Tres meses. Mil sonrisas.
               <br />
               <em>Y todo lo que nos queda.</em>
             </h2>
             <p>
-              Si volviera a empezar, volvería a elegirte.
+              Si volviera a empezar, volvería a elegirte, Lu.
               <br />
               Hoy, mañana y en todos nuestros días bonitos.
             </p>
             <button className="button love-button" onClick={celebrate}>
-              Te amo <Heart size={20} />
+              Te amo Lu <Heart size={20} />
             </button>
-            <span className="closing-note">
-              Por si hoy no te lo había dicho suficiente.
-            </span>
+            <span className="closing-note">Con todo mi amor, Toto.</span>
           </Reveal>
         </section>
       </main>
       <footer className="site-footer">
-        <span>Hecho con todo el amor del mundo.</span>
-        <button
-          className="footer-heart icon-button"
-          aria-label="Nuestro corazón"
-          title="Nuestro corazón"
-          onClick={secretLogin}
-        >
-          <Heart size={19} />
-        </button>
+        <span>Hecho con todo el amor de Toto para Lu.</span>
+        <Heart className="footer-heart" size={19} />
         <span>
           {data.config.nombre_uno} & {data.config.nombre_dos} · Desde{" "}
-          {new Date(data.config.fecha_inicio).getFullYear()}
+          {fechaHoraBolivia(data.config.fecha_inicio).slice(0, 4)} · Bolivia
         </span>
       </footer>
       {demoMode && (
         <div className="demo-notice">
-          <span>Vista de ejemplo · fotos y textos de muestra</span>
-          <a href="#inicio">Tú harás la historia ♡</a>
+          <span>
+            Guardado en este navegador · las fotos iniciales son de ejemplo
+          </span>
+          <span>
+            Con Supabase podrás compartir tus cambios entre dispositivos.
+          </span>
         </div>
       )}
-      {session && (
-        <aside className="editing-bar" aria-label="Editar nuestra historia">
-          <button onClick={() => edit("momentos")}>
-            <Camera size={17} />
-            <span>+ Momento</span>
-          </button>
-          <button onClick={() => edit("cartas")}>
-            <Mail size={17} />
-            <span>+ Carta</span>
-          </button>
-          <button onClick={() => edit("canciones")}>
-            <Music2 size={17} />
-            <span>+ Canción</span>
-          </button>
-          <button
-            onClick={() => edit("config", data.config)}
-            aria-label="Editar nombres y fecha"
-          >
-            <Settings2 size={18} />
-          </button>
-          <button onClick={logout} aria-label="Salir">
-            <LogOut size={18} />
-          </button>
-        </aside>
-      )}
-      {login && <ModalLogin close={() => setLogin(false)} notify={setToast} />}
-      {session && editor && (
+      <aside className="editing-bar" aria-label="Crear nuevos recuerdos">
+        <button onClick={() => edit("momentos")}>
+          <Camera size={17} />
+          <span>+ Momento</span>
+        </button>
+        <button onClick={() => setUpload(true)}>
+          <ImagePlus size={17} />
+          <span>+ Fotos</span>
+        </button>
+        <button onClick={() => edit("cartas")}>
+          <Mail size={17} />
+          <span>+ Cartita</span>
+        </button>
+        <button
+          onClick={() => edit("config", data.config)}
+          aria-label="Editar nombres y fecha"
+        >
+          <Settings2 size={18} />
+        </button>
+      </aside>
+      {editor && (
         <Editor
           key={`${editor.table}-${editor.item?.id || "new"}`}
           target={editor}
@@ -270,10 +209,17 @@ function App() {
           notify={setToast}
         />
       )}
-      {session && deletion && (
+      {deletion && (
         <DeleteDialog
           target={deletion}
           close={() => setDeletion(null)}
+          refresh={reload}
+          notify={setToast}
+        />
+      )}
+      {upload && (
+        <SubirFotos
+          close={() => setUpload(false)}
           refresh={reload}
           notify={setToast}
         />
@@ -303,4 +249,3 @@ function App() {
     </motion.div>
   );
 }
-export default App;

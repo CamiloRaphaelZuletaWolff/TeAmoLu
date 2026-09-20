@@ -1791,3 +1791,84 @@ progress {
     scroll-behavior: auto !important;
   }
 }
+
+/* Creación directa de fotos y cartas, sin inicio de sesión. */
+.section-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: -15px 0 40px;
+}
+.section-actions > span {
+  font-size: 13px;
+  color: var(--vino-suave);
+}
+.gallery .edit-actions {
+  border: 0;
+  justify-content: center;
+  margin-top: 12px;
+}
+.photos-modal {
+  width: min(680px, calc(100% - 28px));
+}
+.photo-upload-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+  max-height: 340px;
+  overflow: auto;
+  padding: 3px;
+}
+.photo-upload-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--rosa-nube);
+  border: 1px solid var(--rosa-algodon);
+  border-radius: 14px;
+}
+.photo-upload-item img {
+  width: 64px;
+  height: 75px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.photo-upload-item label {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 12px;
+}
+.photo-upload-item input {
+  font-size: 14px;
+  padding: 7px 9px;
+}
+.site-footer {
+  padding-bottom: 85px;
+}
+.demo-notice {
+  padding-bottom: 85px;
+}
+@media (max-width: 700px) {
+  .photo-upload-item {
+    gap: 7px;
+    padding: 7px;
+  }
+  .photo-upload-item img {
+    width: 48px;
+    height: 64px;
+  }
+  .photo-upload-item label {
+    font-size: 11px;
+  }
+  .section-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .letters-grid .edit-actions {
+    justify-content: center;
+  }
+}

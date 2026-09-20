@@ -1,10 +1,10 @@
 export const demoData = {
   config: {
     id: 1,
-    nombre_uno: "Tú",
-    nombre_dos: "Yo",
-    fecha_inicio: "2026-08-19T20:00:00-04:00",
-    frase: "Un mes contigo y ya no sé contar de otra forma.",
+    nombre_uno: "Toto",
+    nombre_dos: "Lu",
+    fecha_inicio: "2026-06-20T00:00:00-04:00",
+    frase: "Tres meses contigo y ya no sé contar de otra forma.",
   },
   momentos: [
     {
@@ -12,7 +12,7 @@ export const demoData = {
       titulo: "El comienzo de algo bonito",
       descripcion:
         "Ese día en el que un «tú y yo» se convirtió en un «nosotros». Y todo empezó a tener un poquito más de sentido.",
-      fecha: "2026-08-19",
+      fecha: "2026-06-20",
       demoImage: "/images/manos.jpg",
     },
     {
@@ -35,9 +35,9 @@ export const demoData = {
   cartas: [
     {
       id: "c1",
-      autor: "Yo, con todo mi amor",
+      autor: "Toto, con todo mi amor",
       contenido:
-        "Si pudiera volver a ese primer día, volvería a elegirte.\n\nGracias por las conversaciones que se alargan, por hacerme sonreír mirando el teléfono y por convertir un día cualquiera en un recuerdo bonito.\n\nNo sé qué nos espera, pero me hace muy feliz pensar que vamos a descubrirlo juntos.\n\nEste es nuestro primer mes. Y yo ya quiero todos los que vienen.",
+        "Si pudiera volver a ese primer día, volvería a elegirte.\n\nGracias por las conversaciones que se alargan, por hacerme sonreír mirando el teléfono y por convertir un día cualquiera en un recuerdo bonito.\n\nNo sé qué nos espera, pero me hace muy feliz pensar que vamos a descubrirlo juntos.\n\nEste es nuestro tercer mes. Y yo ya quiero todos los que vienen.",
       created_at: "2026-09-19T20:00:00Z",
     },
     {
@@ -48,14 +48,5 @@ export const demoData = {
       created_at: "2026-09-18T20:00:00Z",
     },
   ],
-  canciones: [
-    {
-      id: "s1",
-      titulo: "Una canción para nosotros",
-      artista: "Nuestra playlist está por empezar",
-      nota: "Ese estribillo que siempre me recuerda a ti.",
-      url: "",
-      created_at: "2026-09-19",
-    },
-  ],
+  fotos: [],
 };

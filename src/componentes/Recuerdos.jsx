@@ -11,7 +11,7 @@ import { fechaBonita } from "../lib/fechas";
 import { imageUrl } from "../lib/imagenes";
 import { Reveal, SectionTitle, EditActions, Empty, Modal } from "./UI";
 export const photoSrc = (item) => item.demoImage || imageUrl(item.imagen_path);
-export function Timeline({ items, session, edit, remove }) {
+export function Timeline({ items, edit, remove }) {
   const ref = useRef(null),
     reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -52,13 +52,13 @@ export function Timeline({ items, session, edit, remove }) {
                 <span className="moment-number" aria-hidden="true">
                   0{index + 1}
                 </span>
-                {session && (
+                {
                   <EditActions
                     label={item.titulo}
                     onEdit={() => edit("momentos", item)}
                     onDelete={() => remove("momentos", item)}
                   />
-                )}
+                }
               </article>
             </Reveal>
           ))}
@@ -71,7 +71,7 @@ export function Timeline({ items, session, edit, remove }) {
     </section>
   );
 }
-export function Galeria({ items }) {
+export function Galeria({ items, upload, edit, remove }) {
   const photos = items.filter((item) => photoSrc(item)),
     [selected, setSelected] = useState(null);
   const reduced = useReducedMotion();
@@ -84,9 +84,15 @@ export function Galeria({ items }) {
     <section className="section gallery-section" id="galeria">
       <SectionTitle
         number="02"
-        title="Pedacitos de felicidad"
+        title="Todas nuestras fotos"
         subtitle="Si la felicidad fuera una foto, se parecería a estas."
       />
+      <div className="section-actions">
+        <button className="button" onClick={upload}>
+          Subir nuestras fotos <Heart size={17} />
+        </button>
+        <span>{photos.length} recuerdos en nuestro álbum</span>
+      </div>
       {photos.length ? (
         <div className="gallery">
           {photos.map((item, index) => (
@@ -111,6 +117,11 @@ export function Galeria({ items }) {
                 </span>
                 <span className="photo-date">{fechaBonita(item.fecha)}</span>
               </button>
+              <EditActions
+                label={item.titulo}
+                onEdit={() => edit(item._table || "momentos", item)}
+                onDelete={() => remove(item._table || "momentos", item)}
+              />
             </Reveal>
           ))}
         </div>

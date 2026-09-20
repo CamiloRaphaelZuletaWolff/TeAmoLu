@@ -1,20 +1,33 @@
+export const ZONA_HORARIA = "America/La_Paz";
+const BOLIVIA_OFFSET = -4 * 60 * 60 * 1000;
+// UTC-4, independiente de la zona horaria del dispositivo.
+const boliviaClock = (value) => new Date(+new Date(value) + BOLIVIA_OFFSET);
+export function fechaHoraBolivia(value = new Date()) {
+  return boliviaClock(value).toISOString().slice(0, 16);
+}
+export function desdeHoraBolivia(value) {
+  return new Date(`${value}:00-04:00`).toISOString();
+}
+export const hoyBolivia = () => fechaHoraBolivia().slice(0, 10);
 export function tiempoJuntos(startValue, nowValue = new Date()) {
-  const start = new Date(startValue),
-    now = new Date(nowValue);
+  const start = boliviaClock(startValue),
+    now = boliviaClock(nowValue);
   if (!Number.isFinite(+start) || !Number.isFinite(+now) || now < start)
     return { meses: 0, días: 0, horas: 0, minutos: 0, segundos: 0 };
   const anniversary = (months) => {
     const date = new Date(start);
-    date.setDate(1);
-    date.setMonth(start.getMonth() + months);
-    const last = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-    date.setDate(Math.min(start.getDate(), last));
+    date.setUTCDate(1);
+    date.setUTCMonth(start.getUTCMonth() + months);
+    const last = new Date(
+      Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0),
+    ).getUTCDate();
+    date.setUTCDate(Math.min(start.getUTCDate(), last));
     return date;
   };
   let meses =
-    (now.getFullYear() - start.getFullYear()) * 12 +
-    now.getMonth() -
-    start.getMonth();
+    (now.getUTCFullYear() - start.getUTCFullYear()) * 12 +
+    now.getUTCMonth() -
+    start.getUTCMonth();
   if (anniversary(meses) > now) meses--;
   let seconds = Math.floor((now - anniversary(meses)) / 1000);
   const días = Math.floor(seconds / 86400);
@@ -25,40 +38,19 @@ export function tiempoJuntos(startValue, nowValue = new Date()) {
   return { meses, días, horas, minutos, segundos: seconds % 60 };
 }
 export const fechaBonita = (value) =>
-  new Intl.DateTimeFormat("es", {
+  new Intl.DateTimeFormat("es-BO", {
     day: "numeric",
     month: "long",
     year: "numeric",
-  }).format(new Date(value.length === 10 ? `${value}T12:00:00` : value));
-export function spotifyEmbed(value) {
-  try {
-    const url = new URL(value);
-    const match = url.pathname.match(
-      /^\/(?:intl-[a-z]+\/)?(track|album|playlist)\/([a-zA-Z0-9]+)\/?$/,
-    );
-    return url.protocol === "https:" &&
-      url.hostname === "open.spotify.com" &&
-      match
-      ? `https://open.spotify.com/embed/${match[1]}/${match[2]}`
-      : null;
-  } catch {
-    return null;
-  }
-}
-export function musicUrl(value) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" &&
-      [
-        "open.spotify.com",
-        "youtube.com",
-        "www.youtube.com",
-        "music.youtube.com",
-        "youtu.be",
-      ].includes(url.hostname)
-      ? url.href
-      : null;
-  } catch {
-    return null;
-  }
-}
+    timeZone: ZONA_HORARIA,
+  }).format(new Date(value.length === 10 ? `${value}T12:00:00-04:00` : value));
+export const fechaConHora = (value) =>
+  new Intl.DateTimeFormat("es-BO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: ZONA_HORARIA,
+  }).format(new Date(value));

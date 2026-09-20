@@ -57,7 +57,7 @@ export function Hero({ config, momentos }) {
       <div className="hero-main">
         <Reveal className="hero-copy">
           <span className="anniversary-badge">
-            <Sparkles size={14} /> NUESTRO PRIMER CAPÍTULO
+            <Sparkles size={14} /> NUESTRO TERCER MES
           </span>
           <h1>
             <span>{config.nombre_uno}</span>
@@ -134,7 +134,7 @@ export function Hero({ config, momentos }) {
         </p>
         <Contador start={config.fecha_inicio} />
         <span className="time-footnote">
-          … y contando momentos, no solo segundos.
+          … y contando momentos, no solo segundos. · Hora de Bolivia
         </span>
       </Reveal>
       <a

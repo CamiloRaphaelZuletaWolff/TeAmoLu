@@ -1,31 +1,40 @@
-# De tu computadora a su corazón ♡
+# Publicar «te amo lu», paso a paso ♡
 
-Esta guía publica **esta app** en Vercel y conecta sus recuerdos con Supabase. Haz los pasos en orden. No necesitas programar ni pegar contraseñas en el código.
+Versión para Toto y Lu, tercer mes, **sin login**. Inicio: **20 de junio de 2026, 00:00 de Bolivia (UTC−4)**.
 
-La carpeta del proyecto es:
+Esta guía va en orden. No te saltes pasos: el orden importa en Supabase (los scripts SQL dependen unos de otros) y en Vercel (las variables tienen que existir **antes** de compilar).
 
-```text
-C:\Users\caezu\Desktop\teAmoLu
-```
+---
 
-**Qué vas a conseguir:** un enlace de Vercel que ella podrá abrir sin entrar a una cuenta. Solo las cuentas que tú crees podrán editar. Las fotos y cartas son de lectura pública, aunque el repositorio de GitHub sea privado.
+## 0. Estado actual del proyecto
 
-## 1. Preparar tu computadora
+Verificado antes de escribir esta guía:
 
-1. Instala una versión LTS de [Node.js](https://nodejs.org/) que sea 22.12 o superior. Si ya lo tienes, no hace falta reinstalarlo.
-2. Instala [Git para Windows](https://git-scm.com/downloads/win) si todavía no está instalado.
-3. Cierra y vuelve a abrir PowerShell después de instalar.
-4. Comprueba:
+| Comprobación | Resultado |
+|---|---|
+| `npm test` | 9 de 9 pasan |
+| `npm run build` | compila sin errores |
+| Login | eliminado por completo (no queda `useSesion`, `Playlist` ni llamadas a `auth`) |
+| Repositorio | `https://github.com/CamiloRaphaelZuletaWolff/TeAmoLu.git`, rama `main`, ya enlazada |
+| `.env.local` | todavía no existe; lo creas en el paso 5 |
+| Cambios sin subir | sí, todo el trabajo «sin login» está pendiente de commit |
 
-```powershell
-node --version
-npm.cmd --version
-git --version
-```
+Lo único que falta para tener la web en línea es: Supabase (pasos 2–4), probarlo local (paso 5), subir a GitHub (paso 6) y desplegar en Vercel (paso 7).
 
-Cada comando debe mostrar un número de versión. En esta guía usamos `npm.cmd` para evitar bloqueos de ejecución de scripts en PowerShell.
+### Qué significa «sin login» aquí
 
-5. Abre el proyecto:
+No hay pantalla de acceso y **cualquiera que tenga el enlace puede añadir, editar y borrar** fotos, cartas y momentos. Es lo que pediste y para una página privada entre ustedes dos está bien, pero conviene saberlo:
+
+- La página lleva `noindex,nofollow`, así que no aparece en Google.
+- La protección real es que nadie más conozca la URL. No la publiques en redes.
+- Se puede volver a poner login después: el script 03 deja RLS activado justamente para eso, y explica al final cómo revertirlo.
+
+---
+
+## 1. Verla en tu computadora (modo borrador)
+
+1. Necesitas [Node.js LTS](https://nodejs.org/) 22.12 o superior y [Git](https://git-scm.com/downloads/win).
+2. Abre PowerShell y ejecuta:
 
 ```powershell
 cd "C:\Users\caezu\Desktop\teAmoLu"
@@ -33,160 +42,132 @@ npm.cmd install
 npm.cmd run dev
 ```
 
-6. Abre la dirección que aparece en la terminal, normalmente `http://127.0.0.1:5173`.
-7. Verás una muestra rosada con fotos de ejemplo. Todavía no está conectada: es normal.
-8. Mantén esa terminal abierta mientras miras la web. Para detenerla, pulsa **Ctrl + C**. Para volver a verla, ejecuta otra vez `npm.cmd run dev`.
+3. Abre la URL de la terminal, normalmente `http://127.0.0.1:5173`.
+4. Ya puedes añadir fotos, cartas y momentos. **Ojo:** sin Supabase todo se guarda solo en ese navegador (aparece el aviso «Guardado en este navegador»).
+5. Para detener el servidor: **Ctrl + C**.
 
-**Checkpoint:** puedes recorrer la historia, ampliar una foto y abrir una carta.
+Ese borrador local **no se migra solo** a Supabase. Conecta primero la base de datos y después carga el álbum definitivo.
 
-## 2. Crear tu cuenta de GitHub
+---
 
-1. Abre [GitHub](https://github.com/) y pulsa **Sign up**.
-2. Completa el registro y verifica tu correo.
-3. Guarda tu usuario; lo usarás más adelante.
+## 2. Crear el proyecto en Supabase
 
-Si ya tienes cuenta, usa esa.
+1. Entra a [supabase.com/dashboard](https://supabase.com/dashboard) y crea la cuenta.
+2. Crea una organización personal si te la pide.
+3. **New project**.
+4. Nombre: `te-amo-lu`.
+5. Genera la contraseña de base de datos y guárdala en un lugar seguro. **Esta contraseña nunca va en la web.**
+6. Región: la más cercana, por ejemplo São Paulo.
+7. Plan Free.
+8. **Create project** y espera uno o dos minutos a que termine de prepararse.
 
-## 3. Crear Supabase
+---
 
-1. Entra a [Supabase](https://supabase.com/dashboard).
-2. Inicia sesión con GitHub o con el método que prefieras.
-3. Si te pide una organización, crea una personal.
-4. Elige **New project**.
-5. Nombre: `nuestro-rinconcito`.
-6. Genera una contraseña para la base de datos y guárdala en tu gestor de contraseñas. **No es la contraseña que usarás para entrar a la web.**
-7. Elige una región cercana; desde Bolivia, São Paulo suele ser una opción adecuada si está disponible.
-8. Selecciona el plan que prefieras; para comenzar puedes usar Free dentro de sus límites vigentes.
-9. Pulsa **Create project** y espera a que esté listo.
+## 3. Crear las tablas y el almacén de fotos
 
-**Checkpoint:** ves el panel de tu proyecto.
+Son tres scripts y hay que correrlos **en este orden**.
 
-## 4. Cerrar el registro y crear sus cuentas
+### 3.1 · Script 01 — tablas base
 
-Haz esto antes de compartir la app. Las políticas del documento permiten editar a cualquier usuario autenticado, así que solo deben existir sus cuentas.
+1. Abre `supabase/01-esquema.sql` en tu computadora y copia todo el contenido.
+2. En Supabase: **SQL Editor → New query**.
+3. Pega y pulsa **Run**.
+4. En **Table Editor** deben aparecer `config`, `momentos`, `cartas` y `canciones`.
 
-1. Ve a **Authentication → Sign In / Providers**.
-2. Busca **Allow new users to sign up** y desactívalo. Guarda.
-3. Deja **Allow anonymous sign-ins** desactivado también. Visitar sin login no requiere usuarios anónimos de Auth.
-4. Conserva Email habilitado; no necesitas Google, GitHub ni otros proveedores para el acceso a esta web.
-5. Entra a **Authentication → Users → Add user → Create new user**.
-6. Escribe tu correo y una contraseña para la web.
-7. Activa **Auto Confirm User** si aparece y crea el usuario.
-8. Repite para ella si también quieres que pueda editar. Puedes crear solo tu cuenta.
-9. Verifica que la lista contiene únicamente las cuentas previstas.
+`canciones` es de la playlist vieja. Queda sin usar y no molesta; puedes ignorarla.
 
-El administrador puede crear usuarios desde el panel aunque el registro público esté cerrado. Los nombres de los menús pueden variar ligeramente. [Referencia de configuración de Auth](https://supabase.com/docs/guides/auth/general-configuration).
+### 3.2 · El bucket de fotos
 
-**Checkpoint:** registro público cerrado, inicios anónimos desactivados y cuentas creadas.
+1. **Storage → New bucket**.
+2. Nombre exacto, en minúsculas: **`momentos`**.
+3. Activa **Public bucket**. Es obligatorio: si no, las fotos no se ven.
+4. Si te ofrece límites, pon **5 MB** y tipo MIME `image/*`. Es de sobra: la app comprime cada foto a WebP de ~350 KB antes de subirla.
+5. **Create bucket**.
 
-## 5. Crear las cuatro tablas
+### 3.3 · Script 02 — permisos del bucket
 
-1. En esta carpeta abre **`supabase/01-esquema.sql`** con VS Code o el Bloc de notas.
-2. Baja a la sección **DATOS INICIALES**.
-3. Sustituye `'Tu nombre'` y `'Su nombre'` por sus nombres, manteniendo las comillas simples.
-4. Cambia la fecha de ejemplo por el día y hora reales:
+1. Copia todo `supabase/02-storage.sql`.
+2. **SQL Editor → New query**, pega y **Run**.
 
-```sql
-'2026-08-19T20:00:00-04:00'
-```
+### 3.4 · Script 03 — habilitar la edición sin cuenta
 
-Esto significa 19 de agosto de 2026, 20:00, zona UTC−4. Bolivia usa `-04:00`. Usa el desfase que corresponda al lugar y a la fecha que quieres representar. Si un nombre contiene apóstrofo, duplícalo dentro de SQL: `'D''Angelo'`.
+**Este es el paso que hace que funcione sin login.** Sin él, la web carga pero no deja guardar nada.
 
-5. Si quieres, cambia también la frase.
-6. Copia **todo** el contenido del archivo.
-7. En Supabase, entra a **SQL Editor → New query**.
-8. Pega y pulsa **Run**.
-9. Abre **Table Editor**. Debes encontrar `config`, `momentos`, `cartas` y `canciones`.
-10. En `config`, comprueba que hay una fila con `id = 1` y tus datos.
-11. Revisa que las cuatro tablas tengan **RLS enabled**.
+1. Copia todo `supabase/03-tercer-mes-sin-login.sql`.
+2. **SQL Editor → New query**, pega y **Run**.
+3. Comprueba en **Table Editor** que ahora existe la tabla **`fotos`**.
+4. Abre `config`: debe decir **Toto**, **Lu** y la fecha de inicio correcta.
 
-Puedes ejecutar el script otra vez: conserva los datos y recrea sus políticas con los mismos nombres. Si ya existe la fila de `config`, volver a ejecutar el INSERT **no cambia** sus valores. Edítala desde Table Editor o desde el botón de ajustes de la app.
+> Si el panel muestra `2026-06-20 04:00:00+00`, está bien: Supabase enseña la hora en UTC y eso son las 00:00 de Bolivia.
 
-**Checkpoint:** cuatro tablas; `config` tiene una fila. Las otras están vacías y listas para tus recuerdos.
+Qué hace el script 03, en concreto:
 
-## 6. Preparar las fotos
+- Crea la tabla `fotos` (galería separada de la historia).
+- Da permiso de lectura **y escritura** al rol anónimo sobre `config`, `momentos`, `cartas` y `fotos`.
+- Da permiso de subida y borrado en el bucket `momentos`.
+- Deja escritos los nombres, la fecha y la frase de esta versión.
 
-1. En Supabase, abre **Storage → New bucket**.
-2. Nombre exacto: **`momentos`**.
-3. Activa **Public bucket** para que las fotos puedan verse sin login.
-4. Si aparecen restricciones: tamaño máximo **5 MB**, tipos MIME **`image/*`**.
-5. Crea el bucket.
-6. En tu computadora, abre **`supabase/02-storage.sql`** y copia todo.
-7. En **SQL Editor → New query**, pega y pulsa **Run**.
+No borra recuerdos. Puedes volver a ejecutarlo cuando quieras; lo único que hace es reaplicar nombres, fecha y frase.
 
-El bucket público permite ver las imágenes. Las políticas permiten subir, modificar y borrar solo con sesión. La app comprime las fotos antes de subirlas y almacena únicamente su nombre de archivo. [Referencia de buckets](https://supabase.com/docs/guides/storage/buckets/creating-buckets).
+---
 
-**Checkpoint:** existe el bucket `momentos` y ejecutaste las cuatro políticas.
+## 4. Copiar la URL y la clave
 
-## 7. Copiar los dos valores públicos de conexión
+1. **Project Settings → Data API** → copia **Project URL**. Se parece a `https://abcdefghijklmnop.supabase.co`.
+2. **Project Settings → API Keys** → copia la **Publishable key**, que empieza por `sb_publishable_`.
+   - Si tu panel todavía muestra el formato antiguo, la equivalente es la **anon / public key**. Cualquiera de las dos sirve.
+3. **No uses** la Secret key, la service_role ni la contraseña de la base de datos. Esas dan control total y quedarían visibles en el navegador.
 
-1. Ve a **Project Settings → Data API** y copia **Project URL**. También puede aparecer en **Connect**.
-2. Tiene un formato similar a `https://abcdefghijklmnop.supabase.co`.
-3. Ve a **Project Settings → API Keys**.
-4. Copia la **Publishable key**, cuyo prefijo es `sb_publishable_`.
-5. No copies **Secret key**, **service_role** ni la contraseña de la base de datos.
+---
 
-La clave publishable está diseñada para el navegador; RLS y la sesión controlan los permisos. No se incluye una fecha de retirada de claves heredadas porque puede cambiar. [Referencia de claves](https://supabase.com/docs/guides/getting-started/api-keys).
+## 5. Conectar la app local y probarla de verdad
 
-## 8. Conectar tu copia local
-
-1. Detén el servidor local con **Ctrl + C** si sigue abierto.
-2. Dentro del proyecto, ejecuta:
+1. Detén Vite con **Ctrl + C**.
+2. Crea el archivo de variables:
 
 ```powershell
 Copy-Item .env.example .env.local
 notepad .env.local
 ```
 
-Si ya existe `.env.local`, ábrelo directamente; no necesitas volver a copiar la plantilla.
-
-3. Completa las dos líneas, sin espacios alrededor de `=`:
+3. Rellena las dos líneas, sin comillas y sin espacios alrededor del `=`:
 
 ```dotenv
 VITE_SUPABASE_URL=https://TU-PROYECTO.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_TU_CLAVE
 ```
 
-4. Guarda y cierra el Bloc de notas. Revisa que el nombre sea `.env.local`, no `.env.local.txt`.
-5. Arranca de nuevo:
+4. Guárdalo como `.env.local` exacto (Notepad puede añadir `.txt`: en el diálogo elige «Todos los archivos»).
+5. Vuelve a arrancar: `npm.cmd run dev`. **Vite solo lee las variables al arrancar**, por eso hay que reiniciarlo.
+6. Recarga la página. Debe desaparecer el aviso «Guardado en este navegador». Las secciones pueden verse vacías: el borrador local es otra cosa y se queda aparte.
 
-```powershell
-npm.cmd run dev
-```
+Ahora prueba las cuatro cosas, en este orden:
 
-6. Abre la dirección de la terminal. Ahora aparecen sus nombres y secciones vacías: la muestra desaparece al usar datos reales.
-7. Baja al final de la página y pulsa **tres veces seguidas el pequeño corazón**.
-8. Entra con el correo y la contraseña que creaste en **Authentication → Users**.
-9. Aparece una barra de edición abajo. Pulsa **+ Momento**.
-10. Escribe título, fecha, descripción y elige o arrastra una foto. Guarda.
-11. Comprueba que aparece en historia y galería. Recarga para comprobar que permanece.
-12. Añade una carta con **+ Carta** y una canción con **+ Canción**.
-13. Para canciones, pega enlaces HTTPS de Spotify o YouTube. En Spotify, el botón triangular abre el reproductor oficial. La flecha abre el enlace en otra pestaña.
-14. El botón de ajustes cambia sus nombres, la fecha y la frase. La fecha del formulario usa la zona horaria de tu dispositivo.
-15. Pulsa **Salir**: la barra de edición y los iconos desaparecen.
+- **+ Fotos** → elige varias imágenes, ponles nombre y una fecha común → Guardar. Aparecen en la galería sin crear entradas en la historia.
+- **+ Cartita** → escribe, firma, guarda. Aparece un sobre nuevo.
+- **+ Momento** → añade un evento a la historia.
+- Borra una foto de prueba y confirma en **Storage → momentos** que su archivo también desapareció.
 
-**Checkpoint:** tus cambios siguen allí después de recargar y puedes visitar sin sesión.
+Recarga la página. Si todo sigue ahí, Supabase está bien conectado.
 
-## 9. Crear un repositorio privado y subir el código
+Si alguna foto falla, el cuadro conserva solo las pendientes para reintentarlas sin duplicar las que ya se guardaron.
 
-1. En GitHub, pulsa **+ → New repository**.
-2. Nombre: `nuestro-rinconcito`.
-3. Selecciona **Private**.
-4. Deja sin marcar README, `.gitignore` y licencia: el proyecto ya trae sus archivos.
-5. Pulsa **Create repository**.
-6. Copia su URL HTTPS, por ejemplo `https://github.com/TU-USUARIO/nuestro-rinconcito.git`.
-7. En PowerShell abre otra terminal o detén el servidor y ejecuta, reemplazando los ejemplos:
+---
+
+## 6. Subir el código a GitHub
+
+Tu repositorio ya existe y `main` ya está enlazada, así que **no** hace falta `git init` ni `git remote add`. Solo confirmar y subir.
+
+1. Comprueba que el archivo de claves está protegido:
 
 ```powershell
 cd "C:\Users\caezu\Desktop\teAmoLu"
-git init
-git config user.name "Tu Nombre"
-git config user.email "tu-correo-de-github@ejemplo.com"
 git check-ignore .env.local
 ```
 
-8. El último comando debe mostrar `.env.local`. Significa que no se subirá. Si no muestra nada, revisa `.gitignore` antes de seguir.
-9. Comprueba y crea la primera versión:
+Tiene que responder `.env.local`. Si no responde nada, **detente**: subirías tus claves.
+
+2. Comprueba el proyecto y mira qué vas a subir:
 
 ```powershell
 npm.cmd test
@@ -195,128 +176,105 @@ git add .
 git status
 ```
 
-10. Revisa que no aparezcan `.env.local`, `node_modules` ni `dist` entre los archivos preparados. Sí debe aparecer `.env.example`.
-11. Ahora:
+3. En la lista **no** deben aparecer `.env.local`, `node_modules/` ni `dist/`. Sí debe aparecer `.env.example` (está vacío a propósito, es la plantilla).
+4. Sube:
 
 ```powershell
-git commit -m "Nuestro primer rinconcito"
-git branch -M main
-git remote add origin https://github.com/TU-USUARIO/nuestro-rinconcito.git
-git push -u origin main
+git commit -m "te amo lu: nuestro tercer mes, sin login"
+git push
 ```
 
-12. Si se abre una ventana para iniciar sesión, usa tu cuenta de GitHub. GitHub no acepta la contraseña de la cuenta como contraseña para Git por HTTPS.
-13. Si necesitas otra opción, instala [GitHub CLI](https://cli.github.com/), ejecuta `gh auth login`, selecciona GitHub.com, HTTPS y acceso desde navegador. Después repite `git push -u origin main`.
-14. Actualiza el repositorio en el navegador. Debes ver `src`, `package.json`, la guía y los SQL.
+5. Si se abre el navegador, inicia sesión en GitHub. Si el push falla por autenticación, instala [GitHub CLI](https://cli.github.com/), ejecuta `gh auth login`, elige acceso por navegador y repite el `git push`.
 
-Si dice `remote origin already exists`, revisa `git remote -v`. Solo si apunta al repositorio equivocado, usa `git remote set-url origin URL-CORRECTA`.
+---
 
-**Checkpoint:** el repositorio privado tiene el código, pero no tu `.env.local`.
+## 7. Publicar en Vercel
 
-## 10. Publicar en Vercel
+1. Entra a [vercel.com](https://vercel.com/) y accede **con GitHub**.
+2. Plan Hobby (gratuito) es suficiente.
+3. **Add New → Project**.
+4. Busca **TeAmoLu** y pulsa **Import**. Si no aparece, usa **Adjust GitHub App Permissions** y dale acceso a ese repositorio.
+5. Configura así:
 
-1. Abre [Vercel](https://vercel.com/) e inicia sesión con GitHub.
-2. Para una web personal, elige Hobby si se ajusta a sus condiciones vigentes.
-3. Pulsa **Add New → Project**.
-4. Busca `nuestro-rinconcito` y pulsa **Import**.
-5. Si no aparece, entra a **Adjust GitHub App Permissions** y da acceso a ese repositorio.
-6. Revisa estos valores:
+| Campo | Valor |
+|---|---|
+| Framework Preset | **Vite** |
+| Root Directory | la raíz, sin subcarpeta |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Install Command | automático (o `npm ci`) |
+| Node.js Version | 22.x |
 
-| Campo            | Valor                                       |
-| ---------------- | ------------------------------------------- |
-| Framework Preset | Vite                                        |
-| Root Directory   | raíz del repositorio, sin subcarpeta        |
-| Build Command    | `npm run build`                             |
-| Output Directory | `dist`                                      |
-| Install Command  | automático, o `npm ci`                      |
-| Node.js          | 22.x o una versión LTS compatible posterior |
+6. **Antes de pulsar Deploy**, abre **Environment Variables** y añade las dos, con los mismos valores del `.env.local`:
 
-7. Despliega **Environment Variables**.
-8. Añade `VITE_SUPABASE_URL` con la URL del paso 7.
-9. Añade `VITE_SUPABASE_PUBLISHABLE_KEY` con tu clave publishable.
-10. Selecciona los entornos donde la usarás: **Production** y, si quieres probar ramas, **Preview**. Development sirve si luego descargas variables con la CLI.
-11. Pulsa **Deploy** y espera a que termine.
-12. Si termina correctamente, abre **Visit** o el dominio asignado `https://...vercel.app`.
+| Name | Value |
+|---|---|
+| `VITE_SUPABASE_URL` | `https://TU-PROYECTO.supabase.co` |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_TU_CLAVE` |
 
-Vercel detecta Vite y sirve `dist`. No se necesita `vercel.json`: esta app usa una sola página con anclas, sin rutas adicionales. [Referencia de Vite en Vercel](https://vercel.com/docs/frameworks/frontend/vite).
+7. Márcalas para **Production** y también **Preview** si vas a usar despliegues de prueba.
 
-Si añades o cambias variables después, ve a **Deployments → menú de los tres puntos del despliegue → Redeploy**. Las variables `VITE_` quedan incorporadas durante el build. [Referencia de variables](https://vercel.com/docs/environment-variables).
+> **Esto es lo más importante de todo el despliegue.** Vite incrusta las variables *durante la compilación*, no las lee al abrir la página. Si compilas sin ellas, el sitio queda publicado sin Supabase y muestra la pantalla «Casi listo para nuestra historia». Añadirlas después no arregla nada por sí solo: hay que **volver a desplegar**.
 
-**Checkpoint:** el enlace de Vercel muestra los recuerdos que guardaste en local.
+8. Pulsa **Deploy** y espera el estado **Ready**.
+9. Pulsa **Visit**. Esa URL `https://...vercel.app` es la que le compartes a Lu.
 
-## 11. Ajustes finales
+No hace falta `vercel.json`: la página es una sola vista y navega con anclas.
 
-1. En Supabase abre **Authentication → URL Configuration**.
-2. En **Site URL**, guarda el dominio público de Vercel. El login actual usa correo y contraseña directamente; este ajuste deja el proyecto listo para enlaces de autenticación si los incorporas después.
-3. En Vercel, comprueba que estás compartiendo el dominio de **Production**, no una vista Preview protegida.
-4. Si aparece una pantalla de acceso de Vercel, revisa **Settings → Deployment Protection** del proyecto y su alcance. La visita pública de esta especificación requiere que la producción permita visitantes; no cambies la protección de otros proyectos.
-5. Si quieres otro subdominio, revisa **Settings → Domains** y las opciones disponibles para tu proyecto.
-6. Abre la web desde tu teléfono usando la URL HTTPS de Vercel, no `localhost`.
+Si cambias una variable más adelante: **Deployments → … → Redeploy**.
 
-## 12. Prueba antes de enviarle el enlace
+---
 
-- [ ] Nombres, frase y fecha correctos.
-- [ ] Las fotos son las suyas, no las de ejemplo.
-- [ ] En una ventana de incógnito se ven fotos, cartas y canciones.
-- [ ] En incógnito no hay botones de edición.
-- [ ] El corazón del pie abre el login con tres pulsaciones seguidas.
-- [ ] Con sesión puedes crear, editar y borrar un **recuerdo de prueba**.
-- [ ] Tras borrar ese recuerdo, su archivo desaparece del bucket `momentos`.
-- [ ] Una carta nueva permanece tras recargar.
-- [ ] Una canción abre Spotify/YouTube; Spotify también ofrece el reproductor.
-- [ ] La galería funciona con botones, flechas del teclado y deslizamiento en móvil.
-- [ ] El botón «Te amo» lanza corazones. Con movimiento reducido activado, no debe lanzarlos.
-- [ ] Las cuatro tablas tienen RLS habilitado y las políticas correctas.
-- [ ] Registro público e inicios de sesión anónimos desactivados; solo existen sus cuentas.
-- [ ] No has subido claves secretas a GitHub ni a variables `VITE_`.
+## 8. Comprobar antes de compartir
 
-### Comprobar RLS desde SQL sin alterar recuerdos
+Abre la URL de producción, a ser posible desde el teléfono y no desde la computadora donde probaste.
 
-En **SQL Editor**, puedes ejecutar esta prueba de escritura como visitante. Lo esperado es que informe que RLS bloqueó la escritura; cualquier fila de prueba se revierte al terminar:
+- [ ] El título dice **te amo lu** y aparecen Toto y Lu.
+- [ ] **No** sale la pantalla «Casi listo para nuestra historia». Si sale, faltan las variables en Vercel (paso 7.6) o falta el redeploy.
+- [ ] El contador arranca el **20/06/2026 a las 00:00 de Bolivia**.
+- [ ] Las fotos que subiste desde tu computadora se ven también aquí.
+- [ ] Puedes escribir una carta desde el teléfono, sin cuenta, y sigue ahí al recargar.
+- [ ] Puedes ampliar una foto y editar su nombre.
+- [ ] No aparece ninguna playlist ni ningún formulario de login.
+- [ ] Estás compartiendo la URL de **Production**. Una de Preview puede pedir acceso de Vercel.
+- [ ] En GitHub, el repo **no** contiene `.env.local`.
 
-```sql
-begin;
-set local role anon;
-insert into public.momentos (titulo, fecha)
-values ('Prueba RLS: no debe guardarse', current_date);
-rollback;
-```
+Si la URL de producción te pide iniciar sesión en Vercel, eso no es un login de la app: revisa **Settings → Deployment Protection** y baja la protección para producción.
 
-Si la herramienta detiene la consulta al encontrar el error, ejecuta `rollback;` por separado. Si el INSERT funciona, revisa las políticas antes de compartir la URL. Esta comprobación es para las tablas; para Storage revisa también que INSERT/UPDATE/DELETE están limitados a `authenticated`.
+---
 
-## 13. Cambios en el futuro
+## 9. Actualizar después
 
-**Fotos, cartas, canciones, nombres o fecha:** hazlos desde la web con sesión. Se guardan en Supabase, sin desplegar de nuevo. Otros visitantes los verán cuando recarguen.
+Fotos, cartas, nombres y fecha se cambian **desde la propia página**. No hay que desplegar otra vez; quien abra el enlace verá los cambios al recargar.
 
-**Diseño o código:** modifica los archivos y ejecuta:
+Solo si tocas código:
 
 ```powershell
 npm.cmd test
 npm.cmd run build
 git add .
-git commit -m "Mejoras para nuestro rinconcito"
+git commit -m "Más amor para Lu"
 git push
 ```
 
-Vercel iniciará un nuevo despliegue si la integración de GitHub está activa. Espera a que aparezca **Ready**.
+Vercel despliega solo al detectar el push.
 
-## 14. Si algo no funciona
+---
 
-| Qué ocurre                           | Qué revisar                                                                                                             |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Sigue apareciendo la muestra local   | Revisa el nombre `.env.local`, completa ambas variables y reinicia Vite.                                                |
-| Vercel muestra «Casi listo»          | Faltan variables de conexión. Agrégalas y haz Redeploy.                                                                 |
-| No carga ningún recuerdo             | Project URL/clave, estado de Supabase, SQL de tablas, RLS y fila `config` con id 1.                                     |
-| No entra tu cuenta                   | Correo/contraseña correctos y usuario confirmado en Authentication → Users.                                             |
-| Error de permisos al guardar         | Sesión activa y políticas para `authenticated` ejecutadas.                                                              |
-| La foto no sube                      | Bucket exacto `momentos`, política INSERT y tipo de archivo compatible. Prueba JPG o PNG si HEIC falla en tu navegador. |
-| Se guarda pero la foto no aparece    | Bucket público; `imagen_path` debe ser el nombre del archivo, no una URL.                                               |
-| Aviso de archivo sin eliminar        | Ve a Storage → momentos y elimina el nombre indicado en el aviso, tras comprobar que es el archivo antiguo.             |
-| El proyecto de Supabase está pausado | Abre su panel y utiliza **Restore/Resume**. No esperes que una visita lo restaure automáticamente.                      |
-| Spotify no reproduce                 | Prueba abrir el enlace externo; puede depender del navegador, cuenta, región o restricciones del proveedor.             |
-| `npm` bloqueado por PowerShell       | Usa `npm.cmd`, como en esta guía.                                                                                       |
-| `git push` falla                     | Revisa sesión de GitHub, permisos del repositorio y `git remote -v`.                                                    |
+## 10. Resolver problemas
 
-Los proyectos Free de Supabase pueden pausarse por baja actividad durante siete días; revisa el panel si deja de cargar. [Referencia de pausas y restauración](https://supabase.com/docs/guides/platform/free-project-pausing).
+| Problema | Qué revisar |
+|---|---|
+| Sale «Casi listo para nuestra historia» | Faltan `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en Vercel, o las añadiste sin volver a desplegar. |
+| En el build local aparece `Generated an empty chunk: "supabase"` | Normal si compilas sin `.env.local`. Vite descarta el SDK porque la conexión no existe. Con las variables puestas, ese chunk pesa unos 227 kB. |
+| No deja guardar nada | Falta ejecutar `03-tercer-mes-sin-login.sql`. Quitar el login de la pantalla no cambia los permisos del servidor. |
+| «Falta la tabla fotos» o no carga el álbum | El script 03 no se ejecutó, o se ejecutó antes que el 01. Córrelos en orden. |
+| Mis fotos no se ven en otro dispositivo | Estabas en modo borrador local, o conectaste otro proyecto de Supabase. El borrador local no sincroniza ni se migra solo. |
+| La foto no sube | Bucket llamado exactamente `momentos`, script 03 ejecutado, y archivo compatible. Prueba JPG o PNG si el navegador no admite HEIC. |
+| Las fotos suben pero no se ven | El bucket no está marcado como **Public**. |
+| En Supabase la fecha dice 20 de junio a las 04:00 | El panel muestra UTC. Equivale a las 00:00 de Bolivia. Está correcto. |
+| «No hay espacio local» | Es el modo borrador llenando la cuota del navegador. Conecta Supabase. |
+| La web dejó de responder de un día para otro | Los proyectos Free de Supabase se pausan por inactividad. Entra al panel y pulsa Restore. |
+| `npm` bloqueado en PowerShell | Usa `npm.cmd`, como en toda esta guía. |
 
-Cuando completes los pasos, el enlace de Vercel será su rinconcito compartido. ♡
+Referencias: [buckets de Storage](https://supabase.com/docs/guides/storage/buckets/creating-buckets) · [claves de API](https://supabase.com/docs/guides/getting-started/api-keys) · [pausa de proyectos Free](https://supabase.com/docs/guides/platform/free-project-pausing) · [Vite en Vercel](https://vercel.com/docs/frameworks/frontend/vite) · [variables de entorno en Vercel](https://vercel.com/docs/environment-variables)

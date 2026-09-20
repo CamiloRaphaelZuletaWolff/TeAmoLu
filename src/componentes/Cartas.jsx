@@ -2,8 +2,8 @@ import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { Reveal, SectionTitle, EditActions, Empty, Modal } from "./UI";
-import { fechaBonita } from "../lib/fechas";
-export function Cartas({ items, session, edit, remove }) {
+import { fechaBonita, fechaConHora } from "../lib/fechas";
+export function Cartas({ items, edit, remove }) {
   const [opened, setOpened] = useState(null),
     reduced = useReducedMotion();
   return (
@@ -13,6 +13,11 @@ export function Cartas({ items, session, edit, remove }) {
         title="Hay cosas que quiero decirte"
         subtitle="Palabras que se quedan cortas, pero que salen del corazón."
       />
+      <div className="section-actions">
+        <button className="button" onClick={() => edit("cartas")}>
+          Escribir una cartita <Heart size={17} />
+        </button>
+      </div>
       {items.length ? (
         <div className="letters-grid">
           {items.map((item, index) => (
@@ -38,15 +43,15 @@ export function Cartas({ items, session, edit, remove }) {
                 <h3>
                   Una carta para ti <Heart size={15} />
                 </h3>
-                <span>{fechaBonita(item.created_at)}</span>
+                <span>{fechaConHora(item.created_at)} · Bolivia</span>
               </div>
-              {session && (
+              {
                 <EditActions
                   label={`carta de ${item.autor}`}
                   onEdit={() => edit("cartas", item)}
                   onDelete={() => remove("cartas", item)}
                 />
-              )}
+              }
             </Reveal>
           ))}
         </div>
@@ -79,7 +84,7 @@ export function Cartas({ items, session, edit, remove }) {
             <div className="letter-text">{opened.contenido}</div>
             <p className="signature">{opened.autor}</p>
             <span className="letter-date">
-              {fechaBonita(opened.created_at)}
+              {fechaConHora(opened.created_at)} · Bolivia
             </span>
           </motion.article>
         </Modal>

@@ -1,7 +1,9 @@
-import { supabase } from "./supabase";
+import { supabase, demoMode } from "./supabase";
 export const imageUrl = (path) =>
   path
-    ? supabase?.storage.from("momentos").getPublicUrl(path).data.publicUrl
+    ? demoMode && path.startsWith("data:image/")
+      ? path
+      : supabase?.storage.from("momentos").getPublicUrl(path).data.publicUrl
     : null;
 export async function uploadImage(file, progress) {
   const { default: imageCompression } = await import(
@@ -20,6 +22,11 @@ export async function uploadImage(file, progress) {
   });
   const path = `${crypto.randomUUID()}.webp`;
   progress(85);
+  if (demoMode) {
+    const dataUrl = await imageCompression.getDataUrlFromFile(compressed);
+    progress(100);
+    return dataUrl;
+  }
   const { error } = await supabase.storage
     .from("momentos")
     .upload(path, compressed, { contentType: "image/webp" });
@@ -28,7 +35,7 @@ export async function uploadImage(file, progress) {
   return path;
 }
 export async function removeImage(path) {
-  if (!path) return;
+  if (!path || demoMode) return;
   const { error } = await supabase.storage.from("momentos").remove([path]);
   if (error) throw error;
 }

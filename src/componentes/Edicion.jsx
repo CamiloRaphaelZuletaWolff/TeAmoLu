@@ -1,84 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Heart, UploadCloud, ImagePlus, X } from "lucide-react";
-import { supabase, demoMode } from "../lib/supabase";
+import { saveRecord, deleteRecord } from "../lib/contenido";
+import { demoMode } from "../lib/supabase";
 import { imageUrl, uploadImage, removeImage } from "../lib/imagenes";
 import { celebrate } from "../lib/confetti";
-import { musicUrl } from "../lib/fechas";
+import { fechaHoraBolivia, desdeHoraBolivia } from "../lib/fechas";
 import { Modal } from "./UI";
-
-export function ModalLogin({ close, notify }) {
-  const [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
-  async function login(event) {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    const form = new FormData(event.currentTarget);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: form.get("email").trim(),
-        password: form.get("password"),
-      });
-      if (error) throw error;
-      notify("Qué lindo tenerte aquí. Ya puedes guardar recuerdos.");
-      close();
-    } catch {
-      setError("No pudimos entrar. Revisa tu correo, contraseña y conexión.");
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <Modal title="Este rinconcito es nuestro" onClose={close} busy={busy}>
-      <Heart className="modal-heart" />
-      {demoMode ? (
-        <p>
-          Estás viendo una muestra local. Conecta tu proyecto de Supabase
-          siguiendo GUIA-DEPLOY.md para entrar con tu cuenta y guardar sus
-          recuerdos.
-        </p>
-      ) : (
-        <form onSubmit={login}>
-          <p>Entra para seguir escribiendo nuestra historia.</p>
-          <label>
-            Correo electrónico
-            <input
-              name="email"
-              type="email"
-              autoComplete="username"
-              required
-              autoFocus
-              maxLength={254}
-            />
-          </label>
-          <label>
-            Contraseña
-            <input
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-            />
-          </label>
-          {error && (
-            <p className="form-error" role="alert">
-              {error}
-            </p>
-          )}
-          <button className="button full-width" disabled={busy}>
-            {busy ? "Entrando…" : "Entrar con cariño"}
-            <Heart size={16} />
-          </button>
-        </form>
-      )}
-    </Modal>
-  );
-}
-function localDateTime(value) {
-  const date = new Date(value);
-  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-  return date.toISOString().slice(0, 16);
-}
 
 export function Editor({ target, close, refresh, notify }) {
   const { table, item = {} } = target;
@@ -115,7 +42,7 @@ export function Editor({ target, close, refresh, notify }) {
   const titles = {
     momentos: item.id ? "Volvamos a este recuerdo" : "Un nuevo recuerdo",
     cartas: item.id ? "Un poquito más de amor" : "Una carta desde el corazón",
-    canciones: item.id ? "Nuestra canción" : "Otra canción para nosotros",
+    fotos: "Una foto de nosotros",
     config: "Los protagonistas de esta historia",
   };
   async function save(event) {
@@ -127,7 +54,7 @@ export function Editor({ target, close, refresh, notify }) {
     let payload, newPath;
     let cleanupWarning = "";
     try {
-      if (table === "momentos") {
+      if (["momentos", "fotos"].includes(table)) {
         if (!text("titulo"))
           throw new Error("Escribe un título para este recuerdo.");
         newPath = file ? await uploadImage(file, setProgress) : null;
@@ -138,41 +65,26 @@ export function Editor({ target, close, refresh, notify }) {
           imagen_path:
             newPath || (removePhoto ? null : item.imagen_path || null),
         };
+        if (demoMode && item.demoImage) {
+          payload.demoImage = newPath || removePhoto ? null : item.demoImage;
+        }
       } else if (table === "cartas") {
         if (!text("autor") || !text("contenido"))
           throw new Error("Escribe tu carta y añade tu firma.");
         payload = { autor: text("autor"), contenido: text("contenido") };
-      } else if (table === "canciones") {
-        if (!text("titulo"))
-          throw new Error("Escribe el título de la canción.");
-        if (text("url") && !musicUrl(text("url")))
-          throw new Error("Usa un enlace HTTPS de Spotify o YouTube.");
-        payload = {
-          titulo: text("titulo"),
-          artista: text("artista"),
-          nota: text("nota"),
-          url: text("url") || null,
-        };
       } else {
         if (!text("nombre_uno") || !text("nombre_dos"))
           throw new Error("Escribe los dos nombres.");
         payload = {
           nombre_uno: text("nombre_uno"),
           nombre_dos: text("nombre_dos"),
-          fecha_inicio: new Date(text("fecha_inicio")).toISOString(),
+          fecha_inicio: desdeHoraBolivia(`${text("fecha_inicio")}T00:00`),
           frase: text("frase"),
         };
       }
-      const query = item.id
-        ? supabase.from(table).update(payload).eq("id", item.id)
-        : supabase.from(table).insert(payload);
-      const { error: saveError } = await query.select("id").single();
-      if (saveError)
-        throw new Error(
-          "No se pudo guardar. Comprueba tu conexión y los permisos de tu cuenta.",
-        );
+      await saveRecord(table, payload, item.id);
       if (
-        table === "momentos" &&
+        ["momentos", "fotos"].includes(table) &&
         item.imagen_path &&
         item.imagen_path !== payload.imagen_path
       ) {
@@ -202,12 +114,12 @@ export function Editor({ target, close, refresh, notify }) {
       setBusy(false);
     }
   }
-  const shownPhoto = preview || (!removePhoto && imageUrl(item.imagen_path));
+  const shownPhoto = preview || (!removePhoto && (item.demoImage || imageUrl(item.imagen_path)));
   return (
     <Modal title={titles[table]} onClose={close} busy={busy}>
       <form onSubmit={save}>
         <fieldset disabled={busy}>
-          {table === "momentos" && (
+          {["momentos", "fotos"].includes(table) && (
             <>
               <label>
                 Título
@@ -226,7 +138,7 @@ export function Editor({ target, close, refresh, notify }) {
                   name="fecha"
                   type="date"
                   defaultValue={
-                    item.fecha || localDateTime(new Date()).slice(0, 10)
+                    item.fecha || fechaHoraBolivia(new Date()).slice(0, 10)
                   }
                   required
                 />
@@ -281,7 +193,7 @@ export function Editor({ target, close, refresh, notify }) {
                   onChange={(event) => choose(event.target.files[0])}
                   className="file-input"
                 />
-                {shownPhoto && (
+                {shownPhoto && table !== "fotos" && (
                   <button
                     type="button"
                     className="text-button"
@@ -332,51 +244,10 @@ export function Editor({ target, close, refresh, notify }) {
                 Tu firma
                 <input
                   name="autor"
-                  defaultValue={item.autor}
+                  defaultValue={item.autor || "Toto"}
                   required
                   maxLength={100}
                   placeholder="Con amor, yo"
-                />
-              </label>
-            </>
-          )}
-          {table === "canciones" && (
-            <>
-              <label>
-                Canción
-                <input
-                  name="titulo"
-                  defaultValue={item.titulo}
-                  required
-                  maxLength={150}
-                  autoFocus
-                />
-              </label>
-              <label>
-                Artista
-                <input
-                  name="artista"
-                  defaultValue={item.artista}
-                  maxLength={150}
-                />
-              </label>
-              <label>
-                Enlace de Spotify o YouTube
-                <input
-                  name="url"
-                  type="url"
-                  defaultValue={item.url}
-                  maxLength={2000}
-                  placeholder="https://open.spotify.com/track/…"
-                />
-              </label>
-              <label>
-                ¿Por qué te recuerda a nosotros?
-                <textarea
-                  name="nota"
-                  rows={3}
-                  defaultValue={item.nota}
-                  maxLength={1000}
                 />
               </label>
             </>
@@ -403,16 +274,19 @@ export function Editor({ target, close, refresh, notify }) {
                 />
               </label>
               <label>
-                El día y la hora en que empezó todo
+                El día en que empezó todo
                 <input
                   name="fecha_inicio"
-                  type="datetime-local"
-                  defaultValue={localDateTime(item.fecha_inicio)}
+                  type="date"
+                  defaultValue={fechaHoraBolivia(item.fecha_inicio).slice(
+                    0,
+                    10,
+                  )}
                   required
                 />
               </label>
               <p className="field-help">
-                Se usa la zona horaria de este dispositivo.
+                Cada aniversario empieza a las 00:00, hora de Bolivia (UTC−4).
               </p>
               <label>
                 Su frase
@@ -442,17 +316,12 @@ export function DeleteDialog({ target, close, refresh, notify }) {
     setBusy(true);
     setError("");
     try {
-      const { error, data } = await supabase
-        .from(target.table)
-        .delete()
-        .eq("id", target.item.id)
-        .select("id");
-      if (error || !data?.length)
-        throw new Error(
-          "No se pudo eliminar. Comprueba tu conexión y tu sesión.",
-        );
+      await deleteRecord(target.table, target.item.id);
       let warning = "";
-      if (target.table === "momentos" && target.item.imagen_path) {
+      if (
+        ["momentos", "fotos"].includes(target.table) &&
+        target.item.imagen_path
+      ) {
         try {
           await removeImage(target.item.imagen_path);
         } catch {
