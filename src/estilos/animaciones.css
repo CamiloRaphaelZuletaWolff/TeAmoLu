@@ -1,0 +1,61 @@
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+@keyframes float-heart {
+  0% {
+    transform: translate3d(0, 105vh, 0) rotate(-12deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.16;
+  }
+  85% {
+    opacity: 0.1;
+  }
+  100% {
+    transform: translate3d(35px, -15vh, 0) rotate(18deg);
+    opacity: 0;
+  }
+}
+@keyframes invite-scroll {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+.hero-heart,
+.loading-heart {
+  animation: heartbeat 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.scroll-cue {
+  animation: invite-scroll 2.5s ease-in-out infinite;
+}
+.floating-hearts {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.floating-hearts span {
+  position: absolute;
+  top: 0;
+  color: #e785a5;
+  animation: float-heart linear infinite;
+  will-change: transform;
+  opacity: 0;
+}
+@media (max-width: 600px) {
+  .floating-hearts span:nth-child(n + 9) {
+    display: none;
+  }
+}

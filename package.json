@@ -1,0 +1,28 @@
+{
+  "name": "nuestro-rinconcito",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "browser-image-compression": "^2.0.2",
+    "canvas-confetti": "^1.9.3",
+    "framer-motion": "^12.23.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "vite": "^6.1.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
