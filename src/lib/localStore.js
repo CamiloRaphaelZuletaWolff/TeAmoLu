@@ -1,4 +1,5 @@
 import { demoData } from "./demo.js";
+import { CARTAS_FESTIVAS_INICIALES } from "./festividades.js";
 
 let database;
 function openLocal() {
@@ -27,6 +28,10 @@ async function transaction(change) {
     let result;
     request.onsuccess = () => {
       result = request.result || structuredClone(demoData);
+      // Actualiza borradores anteriores sin reemplazar recuerdos ni cartas editadas.
+      if (!Array.isArray(result.cartas_especiales)) {
+        result.cartas_especiales = structuredClone(CARTAS_FESTIVAS_INICIALES);
+      }
       if (change) {
         change(result);
         store.put(result, "album");

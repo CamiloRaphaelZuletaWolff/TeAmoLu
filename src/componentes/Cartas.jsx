@@ -9,7 +9,7 @@ export function Cartas({ items, edit, remove }) {
   return (
     <section className="section letters-section" id="cartas">
       <SectionTitle
-        number="03"
+        number="04"
         title="Hay cosas que quiero decirte"
         subtitle="Palabras que se quedan cortas, pero que salen del corazón."
       />

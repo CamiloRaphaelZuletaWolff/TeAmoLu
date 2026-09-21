@@ -11,6 +11,7 @@ import { Cartas } from "./componentes/Cartas";
 import { Divider, Reveal } from "./componentes/UI";
 import { Editor, DeleteDialog } from "./componentes/Edicion";
 import { SubirFotos } from "./componentes/SubirFotos";
+import { CartasEspeciales } from "./componentes/CartasEspeciales";
 
 const hearts = Array.from({ length: 16 }, (_, i) => ({
   left: `${(i * 37 + 9) % 100}%`,
@@ -124,6 +125,7 @@ export default function App() {
         <nav aria-label="Navegación principal">
           <a href="#historia">Nuestra historia</a>
           <a href="#galeria">Nuestras fotos</a>
+          <a href="#universo">Nuestro universo</a>
           <a href="#cartas">Cartitas</a>
         </nav>
         <Heart className="header-heart" size={20} />
@@ -139,6 +141,8 @@ export default function App() {
           edit={edit}
           remove={remove}
         />
+        <Divider />
+        <CartasEspeciales />
         <Divider />
         <Cartas items={data.cartas} edit={edit} remove={remove} />
         <section className="closing">

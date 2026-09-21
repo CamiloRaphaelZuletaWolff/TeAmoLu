@@ -2,6 +2,36 @@
 
 Versión para Toto y Lu, tercer mes, **sin login**. Inicio: **20 de junio de 2026, 00:00 de Bolivia (UTC−4)**.
 
+## Actualización: cartas especiales de nuestro pequeño universo
+
+Si la app ya está conectada a Supabase, ejecuta **solo el nuevo archivo [supabase/04-cartas-especiales.sql](./supabase/04-cartas-especiales.sql)**. No necesitas repetir los scripts 01–03, cambiar las variables ni volver a subir las fotos.
+
+1. Abre ese archivo y copia **todo** su contenido.
+2. En tu proyecto de Supabase, entra a **SQL Editor → New query**.
+3. Pega el SQL y pulsa **Run**.
+4. En **Table Editor**, comprueba que existe `cartas_especiales` con cuatro filas.
+5. Recarga la app y abre **Nuestro universo**. El 21 de septiembre ya aparecerá la carta de girasoles.
+6. Pulsa la mini carta: se abre a pantalla completa con una lluvia de girasoles. El botón de la carta permite repetir la animación.
+7. En **Personalizar fechas** puedes editar título, dedicatoria, texto, firma, estilo y fecha; también añadir otras ocasiones. Las cartas futuras se administran allí, pero todavía no se muestran en la colección.
+8. Para llevar el código nuevo a tu Vercel conectado a GitHub, guarda los cambios en un commit y haz `git push`, como se explica más abajo.
+
+| Carta preparada | Empieza a mostrarse (Bolivia) | Permanece después |
+|---|---|---|
+| Girasoles y flores amarillas | 21/09/2026 · 00:00 | Sí |
+| Cumpleaños de Lu | 14/10/2026 · 00:00 | Sí |
+| Halloween | 31/10/2026 · 00:00 | Sí |
+| Navidad | 25/12/2026 · 00:00 | Sí |
+
+La fecha es completa, incluido el año. No se borra ni se vuelve a ocultar una carta al acabar el día o al cambiar de año. Para una edición de 2027 puedes añadir otra carta. Si cambias manualmente la fecha de una carta a una fecha futura, permanecerá programada hasta entonces.
+
+La función `leer_cartas_especiales()` filtra con **el reloj de Supabase** y `America/La_Paz`, independientemente de la zona del teléfono. La página vuelve a consultar a medianoche y al recuperar el foco o la conexión. No hace falta cron, Edge Functions ni un nuevo despliegue para cada fecha. [Funciones de base de datos de Supabase](https://supabase.com/docs/guides/database/functions).
+
+El SQL no modifica `config`, las fotos ni las cartas normales. Puedes repetirlo sin sobrescribir una carta personalizada; las plantillas se insertan solo si su clave no existe. Si eliminaste una plantilla y repites el SQL, se vuelve a crear esa plantilla.
+
+Se conserva el modo sin login: el editor puede ver las cartas programadas para personalizarlas. La programación es una regla de publicación de la colección, no una restricción de acceso secreto. Con movimiento reducido activado, se conserva la carta decorada y se omite la lluvia animada.
+
+En el borrador local también funciona y se guarda en IndexedDB, sin reemplazar recuerdos anteriores. Con Supabase, si todavía falta el SQL 04, solo esta sección muestra la indicación para activarla; el resto de la página sigue funcionando.
+
 Esta guía va en orden. No te saltes pasos: el orden importa en Supabase (los scripts SQL dependen unos de otros) y en Vercel (las variables tienen que existir **antes** de compilar).
 
 ---
@@ -12,14 +42,14 @@ Verificado antes de escribir esta guía:
 
 | Comprobación | Resultado |
 |---|---|
-| `npm test` | 9 de 9 pasan |
+| `npm test` | 16 de 16 pasan, incluidas fechas festivas y persistencia |
 | `npm run build` | compila sin errores |
 | Login | eliminado por completo (no queda `useSesion`, `Playlist` ni llamadas a `auth`) |
 | Repositorio | `https://github.com/CamiloRaphaelZuletaWolff/TeAmoLu.git`, rama `main`, ya enlazada |
-| `.env.local` | todavía no existe; lo creas en el paso 5 |
-| Cambios sin subir | sí, todo el trabajo «sin login» está pendiente de commit |
+| `.env.local` | existe en esta copia; consérvalo y no lo subas a Git |
+| Cartas especiales | ejecutar el nuevo SQL 04 en tu Supabase |
 
-Lo único que falta para tener la web en línea es: Supabase (pasos 2–4), probarlo local (paso 5), subir a GitHub (paso 6) y desplegar en Vercel (paso 7).
+Para una instalación desde cero, sigue los pasos inferiores y ejecuta también el SQL 04. Para actualizar tu instalación actual, usa el bloque de cartas especiales de arriba.
 
 ### Qué significa «sin login» aquí
 

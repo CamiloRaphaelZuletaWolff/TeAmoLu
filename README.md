@@ -4,6 +4,16 @@ El álbum de **Toto y Lu**, para celebrar su **tercer mes**. El contador empieza
 
 ## Usar ahora
 
+### Cartas especiales · Nuestro pequeño universo
+
+Mini cartas con temas de girasoles (21/09/2026), cumpleaños de Lu (14/10), Halloween (31/10) y Navidad (25/12). Al abrirlas aparece una carta decorada a pantalla completa y una lluvia de flores o elementos de su temática. La animación puede repetirse y respeta movimiento reducido.
+
+Cada carta se publica desde las 00:00 de su fecha en Bolivia y queda visible en los años siguientes. **Personalizar fechas** permite cambiar contenido, firma, estilo y fecha, preparar las futuras y crear otras ocasiones. El editor conserva el modo sin login de la app.
+
+**Base de datos:** ejecuta [supabase/04-cartas-especiales.sql](./supabase/04-cartas-especiales.sql). Solo añade `cartas_especiales`, sus cuatro plantillas y la función `leer_cartas_especiales()`, que calcula las cartas visibles con la hora del servidor. No reemplaza tus fotos ni tus cartas normales. Los pasos están al inicio de [GUIA-DEPLOY.md](./GUIA-DEPLOY.md).
+
+El borrador local incorpora las plantillas sin borrar contenido anterior. El calendario usa fechas completas, no un filtro por día del año: una carta pasada no desaparece en enero. No requiere tareas programadas; se vuelve a consultar al llegar la medianoche boliviana y al volver a la página.
+
 ```powershell
 npm.cmd install
 npm.cmd run dev
