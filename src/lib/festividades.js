@@ -38,7 +38,7 @@ export const TEMAS_FESTIVOS = {
   },
 };
 
-// Fechas completas, sin vencimiento ni reinicio anual. Se pueden editar desde la app.
+// Plantillas del borrador local; en producción las cartas se leen solo desde Supabase.
 export const CARTAS_FESTIVAS_INICIALES = [
   {
     id: "20260921-0000-4000-8000-000000000001",
@@ -46,7 +46,7 @@ export const CARTAS_FESTIVAS_INICIALES = [
     fecha: "2026-09-21",
     tema: "girasoles",
     titulo: "Todos los girasoles para ti",
-    subtitulo: "21 de septiembre · Flores amarillas para mi Lu",
+    subtitulo: "21 de septiembre · Flores amarillas para mi amorcito",
     autor: "Toto",
     contenido:
       "Lu,\n\nHoy, 21 de septiembre, quería regalarte un pedacito de sol. Así que llené este lugar de girasoles, uno por cada sonrisa que me regalas.\n\nDicen que los girasoles buscan la luz. Yo, sin darme cuenta, siempre te busco a ti.\n\nQue nunca te falten flores amarillas, días bonitos y este amor que tengo tantas ganas de seguir cuidando contigo.\n\nFeliz 21 de septiembre, mi amor. Tú haces florecer mis días.",

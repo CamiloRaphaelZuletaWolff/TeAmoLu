@@ -30,7 +30,10 @@ async function transaction(change) {
       result = request.result || structuredClone(demoData);
       // Actualiza borradores anteriores sin reemplazar recuerdos ni cartas editadas.
       if (!Array.isArray(result.cartas_especiales)) {
-        result.cartas_especiales = structuredClone(CARTAS_FESTIVAS_INICIALES);
+        // Las plantillas de prueba nunca se incluyen en el sitio publicado.
+        result.cartas_especiales = import.meta.env?.PROD
+          ? []
+          : structuredClone(CARTAS_FESTIVAS_INICIALES);
       }
       if (change) {
         change(result);

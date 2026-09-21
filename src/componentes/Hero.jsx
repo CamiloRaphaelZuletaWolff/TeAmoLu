@@ -72,8 +72,8 @@ export function Hero({ config, momentos }) {
           <p className="hero-quote">
             {config.frase || "De todas las cosas bonitas, tú eres mi favorita."}
           </p>
-          <a className="button" href="#historia">
-            Nuestra historia <ArrowDown size={17} />
+          <a className="button" href="#universo">
+            Nuestro universo <ArrowDown size={17} />
           </a>
           <p className="since">
             CON AMOR, DESDE EL{" "}
@@ -134,13 +134,13 @@ export function Hero({ config, momentos }) {
         </p>
         <Contador start={config.fecha_inicio} />
         <span className="time-footnote">
-          … y contando momentos, no solo segundos. · Hora de Bolivia
+          … y contando momentos, no solo segundos.
         </span>
       </Reveal>
       <a
         className="scroll-cue"
-        href="#historia"
-        aria-label="Bajar a nuestra historia"
+        href="#universo"
+        aria-label="Bajar a nuestro universo"
       >
         <ArrowDown size={20} />
       </a>

@@ -2,8 +2,6 @@ import { useRef, useState } from "react";
 import {
   motion,
   AnimatePresence,
-  useScroll,
-  useTransform,
   useReducedMotion,
 } from "framer-motion";
 import { ArrowLeft, ArrowRight, Heart, Maximize2 } from "lucide-react";
@@ -11,66 +9,6 @@ import { fechaBonita } from "../lib/fechas";
 import { imageUrl } from "../lib/imagenes";
 import { Reveal, SectionTitle, EditActions, Empty, Modal } from "./UI";
 export const photoSrc = (item) => item.demoImage || imageUrl(item.imagen_path);
-export function Timeline({ items, edit, remove }) {
-  const ref = useRef(null),
-    reduced = useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start 75%", "end 65%"],
-  });
-  const scaleY = useTransform(scrollYProgress, [0, 1], [0, 1]);
-  return (
-    <section className="section" id="historia" ref={ref}>
-      <SectionTitle
-        number="01"
-        title="Así empezó lo nuestro"
-        subtitle="Hay días que se quedan para siempre. Estos son los nuestros."
-      />
-      {items.length ? (
-        <div className="timeline">
-          <div className="timeline-track" />
-          <motion.div
-            className="timeline-progress"
-            style={{ scaleY: reduced ? 1 : scaleY }}
-          />
-          {items.map((item, index) => (
-            <Reveal
-              className={`timeline-item ${index % 2 ? "right" : "left"}`}
-              key={item.id}
-              delay={(index % 3) * 0.08}
-            >
-              <span className="timeline-dot">
-                <Heart size={12} />
-              </span>
-              <article className="moment-card">
-                <span className="eyebrow">{fechaBonita(item.fecha)}</span>
-                <h3>{item.titulo}</h3>
-                <p>{item.descripcion}</p>
-                {photoSrc(item) && (
-                  <img loading="lazy" src={photoSrc(item)} alt={item.titulo} />
-                )}
-                <span className="moment-number" aria-hidden="true">
-                  0{index + 1}
-                </span>
-                {
-                  <EditActions
-                    label={item.titulo}
-                    onEdit={() => edit("momentos", item)}
-                    onDelete={() => remove("momentos", item)}
-                  />
-                }
-              </article>
-            </Reveal>
-          ))}
-        </div>
-      ) : (
-        <Empty>
-          El primer recuerdo está por llegar. Qué bonito empezar juntos.
-        </Empty>
-      )}
-    </section>
-  );
-}
 export function Galeria({ items, upload, edit, remove }) {
   const photos = items.filter((item) => photoSrc(item)),
     [selected, setSelected] = useState(null);

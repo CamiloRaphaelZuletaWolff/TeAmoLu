@@ -128,7 +128,9 @@
   box-shadow: 3px 8px 15px #8b673018;
 }
 .festival-mini-letter > span:first-child {
-  font: 24px var(--font-script);
+  max-width: calc(100% - 20px);
+  font: 24px / 1.05 var(--font-script);
+  text-align: center;
 }
 .festival-mini-letter > span:last-child {
   font-size: 27px;
@@ -170,10 +172,6 @@
 }
 .festival-customize > span {
   font: italic 20px var(--font-serif);
-  color: var(--vino-suave);
-}
-.festival-customize .text-button {
-  font-size: 12px;
   color: var(--vino-suave);
 }
 .festival-status {
@@ -375,89 +373,6 @@
 .festival-garden > span:nth-child(3n) {
   font-size: clamp(60px, 11vw, 150px);
 }
-.festival-manager.modal {
-  width: min(760px, calc(100% - 28px));
-}
-.festival-schedule {
-  display: grid;
-  gap: 12px;
-  margin: 22px 0;
-}
-.festival-scheduled {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  background: var(--fest-bg);
-  color: var(--fest-ink);
-  border: 1px solid var(--fest-line);
-  border-radius: 16px;
-  padding: 16px;
-}
-.festival-scheduled-icon {
-  font-size: 30px;
-}
-.festival-scheduled > div:first-of-type {
-  flex: 1;
-  min-width: 0;
-}
-.festival-scheduled h3 {
-  font: 600 17px/1.4 var(--font-body);
-}
-.festival-scheduled p {
-  font-size: 13px;
-  margin-top: 4px;
-}
-.festival-scheduled div > span {
-  display: block;
-  font-size: 11px;
-  line-height: 1.5;
-  opacity: 0.85;
-  margin-top: 2px;
-}
-.festival-scheduled-actions {
-  display: flex;
-}
-.festival-scheduled .icon-button {
-  color: var(--fest-ink);
-}
-.festival-scheduled .icon-button:hover {
-  background: var(--fest-paper);
-}
-.festival-delete {
-  padding: 17px;
-  background: var(--rosa-petalo);
-  border-radius: 16px;
-  font-size: 14px;
-}
-.festival-editor select {
-  display: block;
-  width: 100%;
-  font: inherit;
-  font-size: 15px;
-  color: var(--vino);
-  padding: 12px;
-  margin-top: 7px;
-  background: var(--rosa-nube);
-  border: 1px solid #e9becf;
-  border-radius: 12px;
-}
-.festival-editor-preview {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background: var(--fest-bg);
-  border: 1px solid var(--fest-line);
-  color: var(--fest-ink);
-  padding: 15px;
-  border-radius: 16px;
-}
-.festival-editor-preview > span:first-child {
-  font-size: 35px;
-}
-.festival-editor-preview > span:last-child {
-  font: italic 22px var(--font-serif);
-}
 @media (max-width: 700px) {
   .festival-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -496,20 +411,6 @@
   }
   .festival-particle-large {
     display: none;
-  }
-  .festival-scheduled {
-    gap: 9px;
-    padding: 12px;
-    flex-wrap: wrap;
-  }
-  .festival-scheduled h3 {
-    font-size: 14px;
-  }
-  .festival-scheduled-icon {
-    font-size: 25px;
-  }
-  .festival-scheduled-actions {
-    margin-left: auto;
   }
   .site-header nav {
     flex-wrap: wrap;

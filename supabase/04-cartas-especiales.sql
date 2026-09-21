@@ -1,6 +1,6 @@
 -- te amo lu: cartas especiales persistentes, independientes de las cartas normales.
 -- Ejecutar una vez en Supabase > SQL Editor. Se puede repetir sin sobrescribir textos.
--- Mantiene el modo de edicion sin login solicitado para esta app.
+-- Las sorpresas se administran desde la base de datos; la web solo lee las publicadas.
 begin;
 
 create table if not exists public.cartas_especiales (
@@ -16,14 +16,17 @@ create table if not exists public.cartas_especiales (
 );
 create index if not exists cartas_especiales_fecha_idx on public.cartas_especiales (fecha desc);
 alter table public.cartas_especiales enable row level security;
-grant select, insert, update, delete on public.cartas_especiales to anon, authenticated;
+revoke all on table public.cartas_especiales from public, anon, authenticated;
+grant select on table public.cartas_especiales to anon, authenticated;
 drop policy if exists "cartas especiales edicion abierta" on public.cartas_especiales;
-create policy "cartas especiales edicion abierta" on public.cartas_especiales
-  for all to anon, authenticated using (true) with check (true);
+drop policy if exists "cartas especiales publicadas" on public.cartas_especiales;
+create policy "cartas especiales publicadas" on public.cartas_especiales
+  for select to anon, authenticated
+  using (fecha <= (now() at time zone 'America/La_Paz')::date);
 
 -- La coleccion publica se calcula con el reloj del servidor, no con el dispositivo.
 -- Solo hay fecha de inicio: nunca caduca ni se oculta al terminar el dia o el anio.
--- El editor lee la tabla completa para personalizar tambien las fechas futuras.
+-- Las cartas futuras solo se administran desde el panel de Supabase.
 create or replace function public.leer_cartas_especiales()
 returns jsonb
 language sql
@@ -46,7 +49,7 @@ grant execute on function public.leer_cartas_especiales() to anon, authenticated
 -- Las cuatro ocasiones de 2026. ON CONFLICT conserva cualquier personalizacion.
 insert into public.cartas_especiales (id, clave, fecha, tema, titulo, subtitulo, contenido, autor)
 values
-('20260921-0000-4000-8000-000000000001', 'girasoles-2026', '2026-09-21', 'girasoles', 'Todos los girasoles para ti', '21 de septiembre · Flores amarillas para mi Lu', 'Lu,
+('20260921-0000-4000-8000-000000000001', 'girasoles-2026', '2026-09-21', 'girasoles', 'Todos los girasoles para ti', '21 de septiembre · Flores amarillas para mi amorcito', 'Lu,
 
 Hoy, 21 de septiembre, quería regalarte un pedacito de sol. Así que llené este lugar de girasoles, uno por cada sonrisa que me regalas.
 

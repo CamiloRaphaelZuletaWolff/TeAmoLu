@@ -4,7 +4,13 @@ Versión para Toto y Lu, tercer mes, **sin login**. Inicio: **20 de junio de 202
 
 ## Actualización: cartas especiales de nuestro pequeño universo
 
-Si la app ya está conectada a Supabase, ejecuta **solo el nuevo archivo [supabase/04-cartas-especiales.sql](./supabase/04-cartas-especiales.sql)**. No necesitas repetir los scripts 01–03, cambiar las variables ni volver a subir las fotos.
+**Si ya ejecutaste el SQL 04**, ejecuta ahora **[supabase/05-sorpresas-solo-lectura.sql](./supabase/05-sorpresas-solo-lectura.sql)** completo en **Supabase → SQL Editor → New query → Run**. Conserva tus cartas y bloquea su creación, edición y eliminación desde la web. Las cartas futuras tampoco se pueden leer desde la API pública. Después sube el código nuevo a GitHub para actualizar Vercel.
+
+El SQL 05 también actualiza el subtítulo del 21 de septiembre a «Flores amarillas para mi amorcito», conservando el cuerpo de la carta. Su sobre dice «Para mi princesa hermosa». Se quitó la etiqueta de hora de Bolivia del contador y de la fecha de las cartas especiales; el horario de publicación sigue siendo el boliviano.
+
+Nuestro pequeño universo es ahora la sección **01**, seguida de fotos (**02**) y cartitas (**03**). La sección anterior «Así empezó lo nuestro» y su botón para añadir momentos se retiraron; sus fotos existentes se conservan en el álbum.
+
+Para una instalación nueva, ejecuta **[supabase/04-cartas-especiales.sql](./supabase/04-cartas-especiales.sql)** después de los scripts 01–03. Su versión actual ya incluye los permisos de solo lectura. No necesitas cambiar las variables ni volver a subir las fotos.
 
 1. Abre ese archivo y copia **todo** su contenido.
 2. En tu proyecto de Supabase, entra a **SQL Editor → New query**.
@@ -12,7 +18,7 @@ Si la app ya está conectada a Supabase, ejecuta **solo el nuevo archivo [supaba
 4. En **Table Editor**, comprueba que existe `cartas_especiales` con cuatro filas.
 5. Recarga la app y abre **Nuestro universo**. El 21 de septiembre ya aparecerá la carta de girasoles.
 6. Pulsa la mini carta: se abre a pantalla completa con una lluvia de girasoles. El botón de la carta permite repetir la animación.
-7. En **Personalizar fechas** puedes editar título, dedicatoria, texto, firma, estilo y fecha; también añadir otras ocasiones. Las cartas futuras se administran allí, pero todavía no se muestran en la colección.
+7. Las sorpresas se administran únicamente en **Supabase → Table Editor → cartas_especiales**. Abre una fila para editarla o usa **Insert row** para crear otra. Completa `fecha` (AAAA-MM-DD), `tema`, `titulo`, `subtitulo`, `contenido` y `autor`. Los temas son `girasoles`, `cumpleanos`, `halloween`, `navidad` y `amor`. Deja `id` y `created_at` con sus valores automáticos; `clave` puede quedar en NULL o ser un identificador único. Guarda los cambios y recarga la página. También puedes usar SQL Editor.
 8. Para llevar el código nuevo a tu Vercel conectado a GitHub, guarda los cambios en un commit y haz `git push`, como se explica más abajo.
 
 | Carta preparada | Empieza a mostrarse (Bolivia) | Permanece después |
@@ -28,7 +34,7 @@ La función `leer_cartas_especiales()` filtra con **el reloj de Supabase** y `Am
 
 El SQL no modifica `config`, las fotos ni las cartas normales. Puedes repetirlo sin sobrescribir una carta personalizada; las plantillas se insertan solo si su clave no existe. Si eliminaste una plantilla y repites el SQL, se vuelve a crear esa plantilla.
 
-Se conserva el modo sin login: el editor puede ver las cartas programadas para personalizarlas. La programación es una regla de publicación de la colección, no una restricción de acceso secreto. Con movimiento reducido activado, se conserva la carta decorada y se omite la lluvia animada.
+Las sorpresas no tienen editor ni calendario de planificación en la página. Los permisos de Supabase solo permiten leer las que ya llegaron a su fecha, incluso consultando directamente la tabla. Las plantillas de prueba no se incluyen en el JavaScript de producción. Las fotos y cartas normales mantienen sus controles de edición. Con movimiento reducido activado, se conserva la carta decorada y se omite la lluvia animada. [Permisos por fila en Supabase](https://supabase.com/docs/guides/database/postgres/row-level-security).
 
 En el borrador local también funciona y se guarda en IndexedDB, sin reemplazar recuerdos anteriores. Con Supabase, si todavía falta el SQL 04, solo esta sección muestra la indicación para activarla; el resto de la página sigue funcionando.
 
@@ -47,7 +53,7 @@ Verificado antes de escribir esta guía:
 | Login | eliminado por completo (no queda `useSesion`, `Playlist` ni llamadas a `auth`) |
 | Repositorio | `https://github.com/CamiloRaphaelZuletaWolff/TeAmoLu.git`, rama `main`, ya enlazada |
 | `.env.local` | existe en esta copia; consérvalo y no lo subas a Git |
-| Cartas especiales | ejecutar el nuevo SQL 04 en tu Supabase |
+| Cartas especiales | SQL 04 para instalación nueva; SQL 05 si ya estaban instaladas |
 
 Para una instalación desde cero, sigue los pasos inferiores y ejecuta también el SQL 04. Para actualizar tu instalación actual, usa el bloque de cartas especiales de arriba.
 
@@ -286,7 +292,7 @@ Si la URL de producción te pide iniciar sesión en Vercel, eso no es un login d
 
 ## 9. Actualizar después
 
-Fotos, cartas, nombres y fecha se cambian **desde la propia página**. No hay que desplegar otra vez; quien abra el enlace verá los cambios al recargar.
+Fotos, cartas normales, nombres y fecha se cambian **desde la propia página**. Las sorpresas se crean y editan únicamente desde la tabla `cartas_especiales` en Supabase. No hay que desplegar otra vez para cambiar contenido; quien abra el enlace verá los cambios al recargar.
 
 Solo si tocas código:
 

@@ -8,9 +8,9 @@ El álbum de **Toto y Lu**, para celebrar su **tercer mes**. El contador empieza
 
 Mini cartas con temas de girasoles (21/09/2026), cumpleaños de Lu (14/10), Halloween (31/10) y Navidad (25/12). Al abrirlas aparece una carta decorada a pantalla completa y una lluvia de flores o elementos de su temática. La animación puede repetirse y respeta movimiento reducido.
 
-Cada carta se publica desde las 00:00 de su fecha en Bolivia y queda visible en los años siguientes. **Personalizar fechas** permite cambiar contenido, firma, estilo y fecha, preparar las futuras y crear otras ocasiones. El editor conserva el modo sin login de la app.
+Ahora es la sección **01**, seguida de fotos (**02**) y cartitas (**03**). Cada carta se publica desde las 00:00 de su fecha en Bolivia y queda visible en los años siguientes. Las sorpresas solo se crean y editan desde **Supabase → Table Editor → cartas_especiales** o SQL Editor; no hay editor de sorpresas en la web.
 
-**Base de datos:** ejecuta [supabase/04-cartas-especiales.sql](./supabase/04-cartas-especiales.sql). Solo añade `cartas_especiales`, sus cuatro plantillas y la función `leer_cartas_especiales()`, que calcula las cartas visibles con la hora del servidor. No reemplaza tus fotos ni tus cartas normales. Los pasos están al inicio de [GUIA-DEPLOY.md](./GUIA-DEPLOY.md).
+**Base de datos:** si ya ejecutaste el SQL 04, ejecuta [supabase/05-sorpresas-solo-lectura.sql](./supabase/05-sorpresas-solo-lectura.sql). Bloquea escrituras desde la web y oculta las cartas futuras también en la API. Para una instalación nueva, el [SQL 04 actualizado](./supabase/04-cartas-especiales.sql) ya incluye esos permisos. No reemplaza tus fotos ni tus cartas normales. Los pasos están al inicio de [GUIA-DEPLOY.md](./GUIA-DEPLOY.md).
 
 El borrador local incorpora las plantillas sin borrar contenido anterior. El calendario usa fechas completas, no un filtro por día del año: una carta pasada no desaparece en enero. No requiere tareas programadas; se vuelve a consultar al llegar la medianoche boliviana y al volver a la página.
 

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Heart, Mail, Camera, Settings2, X, ImagePlus } from "lucide-react";
+import { Heart, Mail, Settings2, X, ImagePlus } from "lucide-react";
 import { configured, demoMode, configurationError } from "./lib/supabase";
 import { celebrate } from "./lib/confetti";
 import { fechaHoraBolivia } from "./lib/fechas";
 import { useContenido } from "./hooks/useContenido";
 import { Hero } from "./componentes/Hero";
-import { Timeline, Galeria } from "./componentes/Recuerdos";
+import { Galeria } from "./componentes/Recuerdos";
 import { Cartas } from "./componentes/Cartas";
 import { Divider, Reveal } from "./componentes/UI";
 import { Editor, DeleteDialog } from "./componentes/Edicion";
@@ -108,8 +108,8 @@ export default function App() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
-      <a href="#historia" className="skip-link">
-        Saltar a los recuerdos
+      <a href="#universo" className="skip-link">
+        Saltar a nuestro universo
       </a>
       <FondoCorazones />
       <header className="site-header">
@@ -123,9 +123,8 @@ export default function App() {
           </span>
         </a>
         <nav aria-label="Navegación principal">
-          <a href="#historia">Nuestra historia</a>
-          <a href="#galeria">Nuestras fotos</a>
           <a href="#universo">Nuestro universo</a>
+          <a href="#galeria">Nuestras fotos</a>
           <a href="#cartas">Cartitas</a>
         </nav>
         <Heart className="header-heart" size={20} />
@@ -133,7 +132,7 @@ export default function App() {
       <main>
         <Hero config={data.config} momentos={album} />
         <Divider />
-        <Timeline items={data.momentos} edit={edit} remove={remove} />
+        <CartasEspeciales />
         <Divider />
         <Galeria
           items={album}
@@ -141,8 +140,6 @@ export default function App() {
           edit={edit}
           remove={remove}
         />
-        <Divider />
-        <CartasEspeciales />
         <Divider />
         <Cartas items={data.cartas} edit={edit} remove={remove} />
         <section className="closing">
@@ -185,10 +182,6 @@ export default function App() {
         </div>
       )}
       <aside className="editing-bar" aria-label="Crear nuevos recuerdos">
-        <button onClick={() => edit("momentos")}>
-          <Camera size={17} />
-          <span>+ Momento</span>
-        </button>
         <button onClick={() => setUpload(true)}>
           <ImagePlus size={17} />
           <span>+ Fotos</span>
