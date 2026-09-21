@@ -12,11 +12,12 @@ if (url && key) {
     client = createClient(url, key);
   } catch {
     configurationError =
-      "Revisa que VITE_SUPABASE_URL sea una URL HTTPS válida y que la clave sea la publishable de ese proyecto.";
+      "Revisa que SUPABASE_URL (o VITE_SUPABASE_URL) sea una URL HTTPS válida y que la clave sea la publishable de ese proyecto.";
   }
 } else if (url || key) {
-  configurationError =
-    "Falta uno de los dos valores de conexión: revisa la URL y la clave publishable.";
+  configurationError = !url
+    ? "Falta SUPABASE_URL (o VITE_SUPABASE_URL). Añádela en Vercel y vuelve a desplegar."
+    : "Falta SUPABASE_PUBLISHABLE_KEY (o VITE_SUPABASE_PUBLISHABLE_KEY). Añádela en Vercel y vuelve a desplegar.";
 }
 export const configured = Boolean(client);
 export const demoMode = !url && !key && import.meta.env.DEV;

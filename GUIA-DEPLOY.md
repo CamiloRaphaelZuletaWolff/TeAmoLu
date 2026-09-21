@@ -246,8 +246,12 @@ git push
 
 | Name | Value |
 |---|---|
-| `VITE_SUPABASE_URL` | `https://TU-PROYECTO.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_TU_CLAVE` |
+| `SUPABASE_URL` | `https://TU-PROYECTO.supabase.co` |
+| `SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_TU_CLAVE` |
+
+La app acepta estos nombres sin prefijo y también los originales `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`. Puedes conservar tu `.env.local` como está. Si existen ambas variantes, se usa primero el valor no vacío con `VITE_`. Solo se incorporan al navegador la URL y la clave pública publishable.
+
+Si antes publicaste una versión que exigía `VITE_`, primero sube el cambio de `vite.config.js` y los archivos modificados a GitHub. Repetir un despliegue del código anterior seguirá exigiendo el prefijo.
 
 7. Márcalas para **Production** y también **Preview** si vas a usar despliegues de prueba.
 
@@ -302,7 +306,7 @@ Vercel despliega solo al detectar el push.
 
 | Problema | Qué revisar |
 |---|---|
-| Sale «Casi listo para nuestra historia» | Faltan `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en Vercel, o las añadiste sin volver a desplegar. |
+| Sale «Casi listo para nuestra historia» | Revisa `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` en Vercel (también se aceptan con `VITE_`), su entorno Production/Preview y que el despliegue incluya el código actualizado. Cambiar variables requiere volver a desplegar. |
 | En el build local aparece `Generated an empty chunk: "supabase"` | Normal si compilas sin `.env.local`. Vite descarta el SDK porque la conexión no existe. Con las variables puestas, ese chunk pesa unos 227 kB. |
 | «Nuestros recuerdos vuelven enseguida» y el detalle dice `PGRST125` o `Invalid path specified in request URL` | La `VITE_SUPABASE_URL` lleva `/rest/v1/` pegado al final. Déjala terminando en `.supabase.co` (paso 4) y reinicia Vite, o vuelve a desplegar en Vercel. |
 | «Nuestros recuerdos vuelven enseguida» con otro detalle | El mensaje entre paréntesis dice qué tabla falló y por qué. Si nombra `fotos`, falta el script 03; si habla de JWT o API key, la clave está mal copiada. |

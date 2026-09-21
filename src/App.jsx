@@ -80,7 +80,7 @@ export default function App() {
         <h1>Casi listo para nuestra historia</h1>
         <p>
           {configurationError ||
-            "Falta conectar Supabase. Añade VITE_SUPABASE_URL y VITE_SUPABASE_PUBLISHABLE_KEY en Vercel y vuelve a desplegar."}
+            "Falta conectar Supabase. Añade SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY en Vercel y vuelve a desplegar. También se aceptan los nombres con VITE_ al principio."}
         </p>
         <span>Encontrarás todos los pasos en GUIA-DEPLOY.md.</span>
       </main>
